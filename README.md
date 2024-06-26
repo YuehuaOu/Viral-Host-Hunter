@@ -11,6 +11,7 @@ biopython=1.81
 transformers=4.38.2
 SentencePiece=0.2.0
 scikit-learn=1.3.2
+openpyxl=3.1.4
 ```
 Notice:
 1. You need install pretrained language modoel **ProtT5-XL-UniRef50**, the link is provided on [ProtT5-XL-U50](https://github.com/agemagician/ProtTrans#models).
