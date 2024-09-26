@@ -70,6 +70,7 @@ num_class = max(info[type][level].values()) + 1
 
 int2word = int2str(info[type][level])
 int2word = {k: 'Mediterraneibacter gnavus' if v == 'Ruminococcus_gnavas' else 'Ruminococcus torques' if v == 'Ruminococcus_torques' else v for k, v in int2word.items()}
+int2word = {k: 'Bacillaceae' if v == 'Caryophanales' else v for k, v in int2word.items()}
 
 # generate embedding
 embedding_path1 = embedding_file + embedding_name + "_embedding.csv"
