@@ -108,8 +108,8 @@ val_embedding = np.concatenate((val_embedding, val_dna_embed), axis=1)
 train_embedding = standard_scaler.transform(train_embedding)
 val_embedding = standard_scaler.transform(val_embedding)
 
-train_embedding = torch.from_numpy(train_embedding).float()
-val_embedding = torch.from_numpy(val_embedding).float()
+train_embedding = torch.from_numpy(train_embedding).float().to(config.device)
+val_embedding = torch.from_numpy(val_embedding).float().to(config.device)
 
 # initialize DHH
 DHH = DnaPathNetworks().to(config.device)
