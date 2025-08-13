@@ -47,6 +47,7 @@ train_proteins = [str(rec.seq) for rec in SeqIO.parse(train_protein, 'fasta')]
 train_labels = [info[type][level][rec.description.split("#")[-1]] for rec in SeqIO.parse(train_protein, 'fasta')]
 train_dataset = MyDataset(train_cds, train_labels, config.k)
 train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
+config.num_class = len(set(train_labels))
 
 val_cds = [str(rec.seq) for rec in SeqIO.parse(val_dna, 'fasta')]
 val_proteins = [str(rec.seq) for rec in SeqIO.parse(val_protein, 'fasta')]
