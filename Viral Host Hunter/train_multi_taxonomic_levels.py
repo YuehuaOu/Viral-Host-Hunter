@@ -108,6 +108,9 @@ val_embedding = np.concatenate((val_embedding, val_dna_embed), axis=1)
 train_embedding = standard_scaler.transform(train_embedding)
 val_embedding = standard_scaler.transform(val_embedding)
 
+train_embedding = torch.from_numpy(train_embedding).float()
+val_embedding = torch.from_numpy(val_embedding).float()
+
 # initialize DHH
 DHH = DnaPathNetworks().to(config.device)
 optimizer = optim.Adam(DHH.parameters(), lr=0.001, weight_decay=1e-4)
