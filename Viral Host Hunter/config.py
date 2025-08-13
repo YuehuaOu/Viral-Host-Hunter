@@ -9,6 +9,7 @@ class Config:
         self.learning_rate = 0.001
         self.k = 4
         self.seed = 0
+        self.num_class = 0
 
 
 
