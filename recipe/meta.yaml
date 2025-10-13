@@ -1,0 +1,37 @@
+package:
+  name: viral-host-hunter
+  version: "0.1.2"
+
+source:
+  path: /data1/lzh/Projects/Build/Viral-Host-Hunter/Viral-Host-Hunter
+
+build:
+  noarch: python
+  script: $PYTHON -m pip install . --no-deps -vv
+
+requirements:
+  build:
+    - python >=3.8,<3.9
+    - pip
+  host:
+    - python >=3.8,<3.9
+    - pip
+  run:
+    - python >=3.8,<3.9
+    - pip
+
+about:
+  home: https://github.com/YuehuaOu/Viral-Host-Hunter
+  license: GPL-3.0
+  license_file: LICENSE.txt
+  summary: "Decrypting viral dark matter with predictive framework and therapeutic implications."
+  description: |
+    Viral-Host-Hunter (VHH) is a deep learning framework for predicting virus-host
+    interactions across taxonomic levels, leveraging protein language models such
+    as ProtT5-XL-UniRef50 for biological sequence embedding and host inference.
+  doc_url: https://github.com/YuehuaOu/Viral-Host-Hunter
+  dev_url: https://github.com/YuehuaOu/Viral-Host-Hunter
+
+extra:
+  recipe-maintainers:
+    - Yuehua Ou
