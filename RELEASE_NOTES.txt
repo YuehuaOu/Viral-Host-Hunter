@@ -1,0 +1,8 @@
+Version 0.1.2
+* Add some options in "vhh-predict" instruction. 
+
+Version 0.1.1
+* Fixed some bugs.
+
+Version 0.1.0
+* First full version of viral-host-hunter
