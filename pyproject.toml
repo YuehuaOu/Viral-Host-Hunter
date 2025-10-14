@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viral-host-hunter"
-version = "0.1.0"
+version = "0.1.7"
 description = "Viral-Host-Hunter: a predictive framework for decrypting viral dark matter and host interactions."
 authors = [
     { name = "Yuehua Ou", email = "ouyuehua2022@email.szu.edu.cn" }
 ] 
 readme = "README.md"
-license = { text = "MIT" }
+license = { text = "GPL-3.0" }
 requires-python = ">=3.8"
 keywords = ["virus", "host", "prediction", "deep-learning", "bioinformatics"]
 dependencies = [
@@ -43,3 +43,7 @@ Issues = "https://github.com/YuehuaOu/Viral-Host-Hunter/issues"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["viral_host_hunter*"]
+
+[tool.setuptools]
+include-package-data = true
+package-data = { "viral_host_hunter" = ["phage_lineage/*.xlsx"] }

@@ -1,6 +1,6 @@
 package:
   name: viral-host-hunter
-  version: "0.1.2"
+  version: "0.1.7"
 
 source:
   path: /data1/lzh/Projects/Build/Viral-Host-Hunter/Viral-Host-Hunter
