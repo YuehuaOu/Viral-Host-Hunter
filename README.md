@@ -254,9 +254,9 @@ This script has the same parameters as the one above, which you can refer to. Ru
 
 **Preparing your own dataset**
 
-If you want to retrain our model using a new dataset, you need to prepare protein sequence FASTA files in the following format:
+If you want to retrain our model using a new dataset, you need to prepare both protein and dna sequence FASTA files in the following format:
 
-- Add host information in the format of ` #<host>` at the end of each FASTA definition line for the program to extract labels. For example:
+- Add host information in the format of `#<host>` at the end of each FASTA definition line for the program to extract labels. For example:
 
 ```fasta
 >GCF_944325205_gene_1582 #Desulfovibrionaceae
@@ -265,9 +265,45 @@ AAFSAHLMGIPSLTGCVKGWYRKEWWDKLGLERFDQIVADELFEQAVNLGKAGMGRYLQR
 LCNAFNWRKDGSADGARLFDDLQTDGVVGPKTLSALSIVLSRNDARRIVHLMNCMQGAHY
 ```
 
-Modify the code and provide label information:
+- Each protein sequence in the protein FASTA file must correspond one-to-one with a DNA sequence in the DNA FASTA file, sharing the same sequence identifier (`#<host>` tag). For example:
 
-[TODO]
+```
+Protein FASTA file:
+>GCF_944325205_gene_1582 #Desulfovibrionaceae
+MADFDLAYAPVSKWEGGWTHDSGDKGGETFRGCARNFFPNEPIWPVIDREKSHPSYKQGK
+AAFSAHLMGIPSLTGCVKGWYRKEWWDKLGLERFDQIVADELFEQAVNLGKAGMGRYLQR
+LCNAFNWRKDGSADGARLFDDLQTDGVVGPKTLSALSIVLSRNDARRIVHLMNCMQGAHY
+```
+
+```
+DNA FASTA file:
+>GCF_944325205_gene_1582 #Desulfovibrionaceae
+ATGGCTGATTTTGATCTGGCGTATGCTCCAGTTTCCAAGTGGGAAGGAGGATGGACCCAT
+GATTCAGGCGATAAAGGCGGTGGCGAAGTTCCGCGGTGCGGCCCGGAATTTTTTCCGAAT
+GAACCCATCTGGCCGGTCATTGACCGTGAAAAGAGCCACCCGTCATACAAACAGGGCAAG
+```
+
+**Modify the code and provide label information**
+
+Once your new dataset has been prepared, follow the steps below to update the code and label information for retraining and prediction.
+
+- Prepare label information for the new dataset： You need to provide the label information corresponding to your new dataset. As a reference, check the file `multi_taxonomic_levels_info.py`, which contains the original label definitions. Create a new file (for example, `new_data_info.py`) following the same structure, and replace the existing labels with those from your new dataset.
+
+- Modify the training code: To train the model with your new dataset, modify the training script accordingly.  You can refer to `train_multi_taxonomic_levels.py` as an example. Specifically, import your new label information file by replacing:
+
+```
+from .multi_taxonomic_levels_info import info
+```
+
+with:
+
+```
+from .new_data_info import info
+```
+
+After this modification, you can proceed to train the model using your new dataset.
+
+- Modify the prediction code: When performing prediction, make similar adjustments to the prediction script as done during training. Refer to `predict_multi_taxonomic_levels.py`, and replace the label import in the same way. Note that during prediction, the input data should follow the same structure as in training — it must include both protein and DNA sequence FASTA files, with each protein sequence corresponding one-to-one to a DNA sequence.
 
 ## Contact Information
 
@@ -277,3 +313,4 @@ Modify the code and provide label information:
 ## Copyright Information / License
 
 Please see the "LICENSE.txt" file for the copyright information.
+
