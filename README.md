@@ -1,6 +1,6 @@
 # VirHostHunter: Decrypting viral dark matter through key proteins using large language models
 
-## 1. Introduction
+# Introduction
 
 Understanding virus–host interactions is central to microbiome research, viral ecology, and phage therapy development. Yet, the majority of viral sequences in metagenomic datasets remain fragmental and host-unknown, collectively referred to as viral dark matter.
 
@@ -8,20 +8,48 @@ VirHostHunter (VHH) addresses this challenge through a protein-centered, alignme
 
 This repository provides the datasets, model code, and usage accompanying the paper “Decrypting viral dark matter through key proteins using large language models”, supporting analyses and downstream applications in phage discovery and microbiome therapeutics.
 
-## 2. Installation
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [1. Installation](#1-installation)
+  - [1.1 Clone the Repository](#11-clone-the-repository)
+  - [1.2 Setup Environment](#12-setup-environment)
+  - [1.3 Download Pretrained Models](#13-download-pretrained-models)
+  - [1.4 Quick Test](#14-quick-test)
+- [2 Usage](#2-usage)
+  - [2.1 Basic Usage](#21-basic-usage)
+  - [2.2 Output Description](#22-output-description)
+- [3 Training (Optional)](#3-training-optional)
+  - [3.1 Reproducing VirHostHunter Training](#31-reproducing-virhosthunter-training)
+    - [3.1.1 Data Preparation](#311-data-preparation)
+    - [3.1.2 Model Training](#312-model-training)
+    - [3.1.3 Evaluation and Prediction](#313-evaluation-and-prediction)
+  - [3.2  Training with Custom Datasets](#32--training-with-custom-datasets)
+    - [3.2.1 Prepare Custom Dataset](#321-prepare-custom-dataset)
+    - [3.2.2 Update Label Information](#322-update-label-information)
+    - [3.2.3 Modify Training Script](#323-modify-training-script)
+    - [3.2.4 Modify Predition Script](#324-modify-predition-script)
+    - [3.2.5 Model Training, Evaluation and Prediction](#325-model-training-evaluation-and-prediction)
+- [Contact Information](#contact-information)
+- [License](#license)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# 1. Installation
 
 **GPU Recommendation:**
 We strongly recommend using a GPU for all steps (embedding generation, training, and prediction) to ensure reasonable performance and accuracy. While `vhh-predict` can run on CPU for the example data, ProtT5 execution is extremely slow on CPU and we cannot guarantee numerical precision or stability in this mode.
 In our case, we used an **NVIDIA GeForce RTX 3090 (24 GiB VRAM)** to generate 1024-dimensional embeddings and perform model training/prediction.
 
-### 2.1 Clone the Repository
+## 1.1 Clone the Repository
 
 ```bash
 git clone https://github.com/YuehuaOu/Viral-Host-Hunter
 cd Viral-Host-Hunter
 ```
 
-### 2.2 Setup Environment
+## 1.2 Setup Environment
 
 VirHostHunter was developed and tested with **Python 3.8, PyTorch 2.4.0, and CUDA 11.8.**
 To ensure a smooth installation and proper functionality, we recommend creating a dedicated virtual environment and installing the required dependencies:
@@ -58,7 +86,7 @@ conda install -c https://conda.anaconda.org/wlhuang viral-host-hunter
 >   RuntimeError: CUDA error: no kernel image is available for execution on the device
 >   ```
 
-### 2.3 Download Pretrained Models
+## 1.3 Download Pretrained Models
 
 Pretrained models can be downloaded from our [model repository](https://zenodo.org/records/17340381):
 
@@ -75,7 +103,7 @@ VirHostHunter also requires the pretrained **ProtT5-XL-UniRef50** model for gene
 - For offline use, manually download the files from [Rostlab/prot_t5_xl_uniref50](https://huggingface.co/Rostlab/prot_t5_xl_uniref50/tree/main) to a local directory.
   **Note:** You only need `pytorch_model.bin` (not the other `.bin` files) along with the remaining files. Then, specify your local directory path using the `--prott5_dir` parameter.
 
-### 2.4 Quick Test
+## 1.4 Quick Test
 
 Example data and scripts are provided in the `examples/` directory for quick verification of a successful installation. Please include the `--model_dir` parameter in the command to specify the location of the pretrained models:
 
@@ -91,9 +119,9 @@ vhh-predict \
 
 For detailed descriptions of all command-line parameters, see the Uasage section below.
 
-## 3 Usage
+# 2 Usage
 
-### 3.1 Basic Usage
+## 2.1 Basic Usage
 
 Use the `vhh-predict` command to perform viral host prediction with the pretrained model.
 A runnable example is provided in `example/run_example.sh`.
@@ -130,7 +158,7 @@ optional arguments:
   --lineage             Append host lineage information to the output.
 ```
 
-### 3.2 Output Description
+## 2.2 Output Description
 
 Prediction results are saved to `$OUTPUT_DIR/predict_result.xlsx` which includes three sheets for family, genus, and species-level predictions.
 
@@ -149,11 +177,11 @@ Each sheet follows the structure below:
 
 If the `--lineage` option is applied, an additional set of columns containing the full host lineage will be included in the output.
 
-## 4 Training (Optional)
+# 3 Training (Optional)
 
-### 4.1 Reproducing VirHostHunter Training
+## 3.1 Reproducing VirHostHunter Training
 
-### 4.1.1 Data Preparation
+### 3.1.1 Data Preparation
 
 To retrain VirHostHunter using the same datasets as in our paper, download and extract the training data using the following commands.
 The datasets are pre-split into training, validation, and test sets according to the procedures described in the publication.
@@ -163,7 +191,7 @@ wget https://zenodo.org/records/17340915/files/data.zip
 unzip data.zip
 ```
 
-### 4.1.2 Model Training
+### 3.1.2 Model Training
 
 Models can be trained for different datasets using the provided scripts:
 
@@ -226,7 +254,7 @@ vhh-train-multi \
 --level family
 ```
 
-### 4.1.3 Evaluation and Prediction
+### 3.1.3 Evaluation and Prediction
 
 After training, models are evaluated by using the test datasets to calculate the metrics .
 
@@ -293,11 +321,11 @@ vhh-predict-multi \
 
 Similarily, run `vhh-predict-multi -h` to view all parameters and help message.
 
-## 4.2  Training with Custom Datasets
+## 3.2  Training with Custom Datasets
 
 To retrain VirHostHunter using a custom dataset:
 
-### 4.2.1 Prepare Custom Dataset
+### 3.2.1 Prepare Custom Dataset
 
 - Provide protein and DNA FASTA files.
 - Add host labels in the format #`<host>` at the end of each FASTA header. For example:
@@ -327,11 +355,11 @@ GATTCAGGCGATAAAGGCGGTGGCGAAGTTCCGCGGTGCGGCCCGGAATTTTTTCCGAAT
 GAACCCATCTGGCCGGTCATTGACCGTGAAAAGAGCCACCCGTCATACAAACAGGGCAAG
 ```
 
-### 4.2.2 Update Label Information
+### 3.2.2 Update Label Information
 
 Define labels for the new dataset in a separate Python file (e.g., new_data_info.py) following the structure of `multi_taxonomic_levels_info.py` for providing labels corresponding to the customized dataset.
 
-### 4.2.3 Modify Training Script
+### 3.2.3 Modify Training Script
 
 Adapt the training script for the new dataset, using `train_multi_taxonomic_levels.py` as a template. In particular, rReplace the label import statement with the new label file.
 
@@ -345,21 +373,21 @@ with:
 from .new_data_info import info
 ```
 
-### 4.2.4 Modify Predition Script
+### 3.2.4 Modify Predition Script
 
 Apply analogous modifications to the prediction script as you did for training. Use `predict_multi_taxonomic_levels.py` as a reference, and replace the label import with the customized label file.
 
-### 4.2.5 Model Training, Evaluation and Prediction
+### 3.2.5 Model Training, Evaluation and Prediction
 
 Follow the same procedures as described in Sections **4.1.2 Model Training** and **4.1.3 Evaluation and Prediction**.
 
-## Contact Information
+# Contact Information
 
 1. Yuehua Ou, ouyuehua2022@email.szu.edu.cn
 2. Zihao Lin, 2410103047@mails.szu.edu.cn
 3. Min Li, limin19@mails.ucas.edu.cn
 4. Bo Xing, xingbo@genomics.cn
 
-## License
+# License
 
 Viral-Host-Hunter is licensed under the **GNU General Public License v3.0** - see the LICENSE.txt file for full details.

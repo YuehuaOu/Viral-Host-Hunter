@@ -1,7 +1,30 @@
 import numpy as np
 import pandas as pd
-from Bio.SeqUtils import GC, CodonUsage
+from Bio.SeqUtils import gc_fraction
 
+synonymous_codons = {
+    'A': ['GCT', 'GCC', 'GCA', 'GCG'],
+    'C': ['TGT', 'TGC'],
+    'D': ['GAT', 'GAC'],
+    'E': ['GAA', 'GAG'],
+    'F': ['TTT', 'TTC'],
+    'G': ['GGT', 'GGC', 'GGA', 'GGG'],
+    'H': ['CAT', 'CAC'],
+    'I': ['ATT', 'ATC', 'ATA'],
+    'K': ['AAA', 'AAG'],
+    'L': ['TTA', 'TTG', 'CTT', 'CTC', 'CTA', 'CTG'],
+    'M': ['ATG'],
+    'N': ['AAT', 'AAC'],
+    'P': ['CCT', 'CCC', 'CCA', 'CCG'],
+    'Q': ['CAA', 'CAG'],
+    'R': ['CGT', 'CGC', 'CGA', 'CGG', 'AGA', 'AGG'],
+    'S': ['TCT', 'TCC', 'TCA', 'TCG', 'AGT', 'AGC'],
+    'T': ['ACT', 'ACC', 'ACA', 'ACG'],
+    'V': ['GTT', 'GTC', 'GTA', 'GTG'],
+    'W': ['TGG'],
+    'Y': ['TAT', 'TAC'],
+    '*': ['TAA', 'TAG', 'TGA'],
+}
 
 class Encoder:
     def __init__(self):
@@ -9,71 +32,55 @@ class Encoder:
 
     def features(self, dna_list):
         dna_features = self.dna_features(dna_list)
-        features = dna_features
-        return features.values
+        return dna_features.values
 
     def dna_features(self, dna_list):
         A_freq, T_freq, C_freq, G_freq, GC_content = [], [], [], [], []
-        codontable = {
-            'ATA': [], 'ATC': [], 'ATT': [], 'ATG': [], 'ACA': [], 'ACC': [], 'ACG': [], 'ACT': [],
-            'AAC': [], 'AAT': [], 'AAA': [], 'AAG': [], 'AGC': [], 'AGT': [], 'AGA': [], 'AGG': [],
-            'CTA': [], 'CTC': [], 'CTG': [], 'CTT': [], 'CCA': [], 'CCC': [], 'CCG': [], 'CCT': [],
-            'CAC': [], 'CAT': [], 'CAA': [], 'CAG': [], 'CGA': [], 'CGC': [], 'CGG': [], 'CGT': [],
-            'GTA': [], 'GTC': [], 'GTG': [], 'GTT': [], 'GCA': [], 'GCC': [], 'GCG': [], 'GCT': [],
-            'GAC': [], 'GAT': [], 'GAA': [], 'GAG': [], 'GGA': [], 'GGC': [], 'GGG': [], 'GGT': [],
-            'TCA': [], 'TCC': [], 'TCG': [], 'TCT': [], 'TTC': [], 'TTT': [], 'TTA': [], 'TTG': [],
-            'TAC': [], 'TAT': [], 'TAA': [], 'TAG': [], 'TGC': [], 'TGT': [], 'TGA': [], 'TGG': []
-        }
-        try:
-            for item in dna_list:
-                A_freq.append(item.count('A') / len(item))
-                T_freq.append(item.count('T') / len(item))
-                C_freq.append(item.count('C') / len(item))
-                G_freq.append(item.count('G') / len(item))
-                GC_content.append(GC(item))
+        codontable = {codon: [] for codon in [
+            'ATA','ATC','ATT','ATG','ACA','ACC','ACG','ACT','AAC','AAT','AAA','AAG',
+            'AGC','AGT','AGA','AGG','CTA','CTC','CTG','CTT','CCA','CCC','CCG','CCT',
+            'CAC','CAT','CAA','CAG','CGA','CGC','CGG','CGT','GTA','GTC','GTG','GTT',
+            'GCA','GCC','GCG','GCT','GAC','GAT','GAA','GAG','GGA','GGC','GGG','GGT',
+            'TCA','TCC','TCG','TCT','TTC','TTT','TTA','TTG','TAC','TAT','TAA','TAG',
+            'TGC','TGT','TGA','TGG']}
 
-                codons = [item[i: i+3] for i in range(0, len(item), 3)]
-                l = []
-                for key in codontable.keys():
-                    l.append(codons.count(key))
-                l_norm = [float(i) / sum(l) for i in l]
+        try:
+            for seq in dna_list:
+                A_freq.append(seq.count('A') / len(seq))
+                T_freq.append(seq.count('T') / len(seq))
+                C_freq.append(seq.count('C') / len(seq))
+                G_freq.append(seq.count('G') / len(seq))
+                GC_content.append(gc_fraction(seq) * 100)
+
+                codons = [seq[i:i+3] for i in range(0, len(seq), 3)]
+                codon_counts = [codons.count(c) for c in codontable.keys()]
+                total = sum(codon_counts)
+                if total == 0:
+                    total = 1
+                codon_norm = [c/total for c in codon_counts]
 
                 for j, key in enumerate(codontable.keys()):
-                    codontable[key].append(l_norm[j])
+                    codontable[key].append(codon_norm[j])
         except Exception as e:
-            print(f"[ERROR] Failed computing base freq for seq {item}: {e}")
-            print(f"Check if the input DNA fasta file is a DNA sequence.")
+            print(f"[ERROR] Failed computing base freq for seq {seq}: {e}")
             exit(1)
 
-        synonym_codons = CodonUsage.SynonymousCodons
-        codontable2 = {
-            'ATA_b': [], 'ATC_b': [], 'ATT_b': [], 'ATG_b': [], 'ACA_b': [], 'ACC_b': [], 'ACG_b': [], 'ACT_b': [],
-            'AAC_b': [], 'AAT_b': [], 'AAA_b': [], 'AAG_b': [], 'AGC_b': [], 'AGT_b': [], 'AGA_b': [], 'AGG_b': [],
-            'CTA_b': [], 'CTC_b': [], 'CTG_b': [], 'CTT_b': [], 'CCA_b': [], 'CCC_b': [], 'CCG_b': [], 'CCT_b': [],
-            'CAC_b': [], 'CAT_b': [], 'CAA_b': [], 'CAG_b': [], 'CGA_b': [], 'CGC_b': [], 'CGG_b': [], 'CGT_b': [],
-            'GTA_b': [], 'GTC_b': [], 'GTG_b': [], 'GTT_b': [], 'GCA_b': [], 'GCC_b': [], 'GCG_b': [], 'GCT_b': [],
-            'GAC_b': [], 'GAT_b': [], 'GAA_b': [], 'GAG_b': [], 'GGA_b': [], 'GGC_b': [], 'GGG_b': [], 'GGT_b': [],
-            'TCA_b': [], 'TCC_b': [], 'TCG_b': [], 'TCT_b': [], 'TTC_b': [], 'TTT_b': [], 'TTA_b': [], 'TTG_b': [],
-            'TAC_b': [], 'TAT_b': [], 'TAA_b': [], 'TAG_b': [], 'TGC_b': [], 'TGT_b': [], 'TGA_b': [], 'TGG_b': []
-        }
+        # codon bias features
+        codontable2 = {k+'_b': [] for k in codontable.keys()}
 
-        for item1 in dna_list:
-            codons = [item1[l: l+3] for l in range(0, len(item1), 3)]
-            codon_counts = []
+        for seq in dna_list:
+            codons = [seq[i:i+3] for i in range(0, len(seq), 3)]
+            codon_counts = [codons.count(c) for c in codontable.keys()]
 
-            for key in codontable.keys():
-                codon_counts.append(codons.count(key))
+            for key_aa, codon_list in synonymous_codons.items():
+                total = sum([codons.count(c) for c in codon_list])
+                if total > 0:
+                    for i, codon in enumerate(codontable.keys()):
+                        if codon in codon_list:
+                            codon_counts[i] /= total
 
-            for key_syn in synonym_codons.keys():
-                total = 0
-                for item2 in synonym_codons[key_syn]:
-                    total += codons.count(item2)
-                for j, key_table in enumerate(codontable.keys()):
-                    if (key_table in synonym_codons[key_syn]) & (total != 0):
-                        codon_counts[j] /= total
-
-            for k, key_table in enumerate(codontable2.keys()):
-                codontable2[key_table].append(codon_counts[k])
+            for k, key in enumerate(codontable2.keys()):
+                codontable2[key].append(codon_counts[k])
 
         features_codonbias = pd.DataFrame.from_dict(codontable2)
         features_dna = pd.DataFrame.from_dict(codontable)
@@ -85,6 +92,5 @@ class Encoder:
 
         features = pd.concat([features_dna, features_codonbias], axis=1)
         return features
-
 
 encoder = Encoder()

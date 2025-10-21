@@ -2,6 +2,7 @@ import warnings
 warnings.filterwarnings("ignore", category=Warning)
 
 import os
+import gc
 import argparse
 import pickle
 
@@ -342,6 +343,40 @@ def main():
             #     print(f"High confidence predictions at {lvl} ({conf_level}%): {high_conf_count}")
             # print(f"No threshold predictions at {lvl}: {sum(1 for p in threshold_results['-1'] if p != 'Unknown')}")
             print("Done.")
+
+            # Free GPU memory for this level to avoid accumulating VRAM usage
+            try:
+                del DHH
+            except Exception:
+                pass
+            try:
+                del autoencoder
+            except Exception:
+                pass
+            try:
+                del rf
+            except Exception:
+                pass
+            # Intermediate tensors and arrays
+            for _var in [
+                'test_embedding_lvl', 'epoch_test_feature', 'test_feature_dataset',
+                'test_feature_dataloader', 'X_test', 'DHH_preds', 'DHH_prob',
+                'rf_preds', 'rf_probs', 'model_prob', 'model_preds', 'preds', 'prob'
+            ]:
+                try:
+                    del locals()[_var]
+                except Exception:
+                    pass
+            if torch.cuda.is_available():
+                try:
+                    torch.cuda.synchronize()
+                except Exception:
+                    pass
+                try:
+                    torch.cuda.empty_cache()
+                except Exception:
+                    pass
+            gc.collect()
 
     print("\nPrediction complete!")
     print(f"Saving results to: {output_file}")

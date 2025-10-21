@@ -1,24 +1,44 @@
 package:
   name: viral-host-hunter
-  version: "0.1.7"
+  version: "0.1.9"
 
 source:
   path: /data1/lzh/Projects/Build/Viral-Host-Hunter/Viral-Host-Hunter
 
 build:
   noarch: python
-  script: $PYTHON -m pip install . --no-deps -vv
+  script: |
+    $PYTHON -m pip install . -vv
 
 requirements:
   build:
-    - python >=3.8,<3.9
+    - python >=3.8,<3.11
     - pip
+    - setuptools >=64
+    - wheel
   host:
-    - python >=3.8,<3.9
+    - python >=3.8,<3.11
     - pip
   run:
-    - python >=3.8,<3.9
-    - pip
+    - python >=3.8,<3.11
+    - pytorch >=2.0
+    - transformers >=4.37
+    - sentencepiece >=0.1.99
+    - biopython >=1.81
+    - scikit-learn >=1.2
+    - numpy >=1.24
+    - pandas >=2.0
+    - openpyxl >=3.1
+    - tqdm >=4.60
+
+
+test:
+  commands:
+    - vhh-predict --help
+  requires:
+    - pytest
+  source_files:
+    - viral_host_hunter/
 
 about:
   home: https://github.com/YuehuaOu/Viral-Host-Hunter
@@ -34,4 +54,4 @@ about:
 
 extra:
   recipe-maintainers:
-    - Yuehua Ou
+    - YuehuaOu
