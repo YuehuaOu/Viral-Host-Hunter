@@ -9,7 +9,9 @@ VirHostHunter (VHH) addresses this challenge through a protein-centered, alignme
 This repository provides the datasets, model code, and usage accompanying the paper “Decrypting viral dark matter through key proteins using large language models”, supporting analyses and downstream applications in phage discovery and microbiome therapeutics.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [1. Installation](#1-installation)
@@ -198,7 +200,7 @@ Models can be trained for different datasets using the provided scripts:
 - `vhh-train-gut`: training models on the gut prophage dataset
 - `vhh-train-multi`: training models on the environmental phage dataset
 
-Example command for training on the gut prophage dataset:
+Example command for **training on the gut prophage dataset**:
 
 ```bash
 vhh-train-gut \
@@ -242,7 +244,7 @@ optional arguments:
                         the internet. (default: None)
 ```
 
-Similarly, for the environmental phage dataset, you can run the `vhh-train-multi` command to train. For example:
+Similarly, **for the environmental phage dataset**, you can run the `vhh-train-multi` command to train. For example:
 
 ```bash
 vhh-train-multi \

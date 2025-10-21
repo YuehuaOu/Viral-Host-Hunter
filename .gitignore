@@ -1,0 +1,14 @@
+embedding/
+image/
+model/
+models/
+data/
+*.egg-info/
+**/__pycache__/
+env/
+venv/
+.vscode/
+.idea/
+examples/embedding
+examples/output
+debug.sh
