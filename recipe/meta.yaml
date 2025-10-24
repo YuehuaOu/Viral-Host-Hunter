@@ -1,13 +1,15 @@
 {% set name = "viral-host-hunter" %}
-{% set version = "0.1.9" %}
+{% set version = "0.1.10" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
+# source:
+#   url: https://github.com/YuehuaOu/Viral-Host-Hunter/archive/refs/tags/v{{ version }}.tar.gz
+#   sha256: e7faf1e4c2a4155d06d894ba76813e132346cc5c79738379166e0de3a8a6b6be
 source:
-  url: https://github.com/YuehuaOu/Viral-Host-Hunter/archive/refs/tags/v{{ version }}.tar.gz
-  sha256: e7faf1e4c2a4155d06d894ba76813e132346cc5c79738379166e0de3a8a6b6be
+  path: /data1/lzh/Projects/Build/Viral-Host-Hunter/Viral-Host-Hunter
 
 build:
   noarch: python

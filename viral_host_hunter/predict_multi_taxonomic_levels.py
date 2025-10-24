@@ -12,6 +12,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from torch.utils.data import TensorDataset, DataLoader
 
 from . import utils
+from .utils import *
 from .config import config
 from .multi_taxonomic_levels_info import info
 from .embedding import get_embedding
@@ -19,7 +20,6 @@ from .encoder_only_dna import encoder
 from .dataset import MyDataset
 from .autoencoder import AutoEncoder
 from .model import *
-from .utils import int2str
 
 
 def parse():
@@ -78,8 +78,6 @@ def parse():
     return parser.parse_args()
 
 def main():
-    
-
     utils.set_seed(config.seed)
     args = parse()
 
@@ -92,6 +90,19 @@ def main():
     pre = args.precision
     model_dir = args.model_dir
     prott5_dir = args.prott5_dir
+
+    if embedding_dir is None:
+        embedding_dir = os.path.join('.', 'embedding', 'multi_taxonomic_levels', type, level)
+    os.makedirs(embedding_dir, exist_ok=True)
+    print(f"Embedding directory: {embedding_dir}")
+    if model_dir is None:
+        model_dir = os.path.join('.', 'model', 'multi_taxonomic_levels', type, level)
+    print(f"Models directory: {model_dir}")
+    print("Generating or loading embeddings ...")
+    # generate embedding
+    embedding_path1 = os.path.join(embedding_dir, "test_embedding.csv")
+    embedding_path2 = os.path.join(embedding_dir, "test_dna_embed.csv")
+
 
     thresholds = {
         "tail": {
@@ -129,24 +140,12 @@ def main():
     test_dataset = MyDataset(test_cds, test_labels, config.k)
     test_dataloader = DataLoader(test_dataset, batch_size=10, shuffle=False)
 
-
-
     # num_class
     config.num_class = max(info[type][level].values()) + 1
 
     int2word = int2str(info[type][level])
 
-    if embedding_dir is None:
-        embedding_dir = os.path.join('.', 'embedding', 'multi_taxonomic_levels', type, level)
-    os.makedirs(embedding_dir, exist_ok=True)
-    print(f"Embedding directory: {embedding_dir}")
-    if model_dir is None:
-        model_dir = os.path.join('.', 'model', 'multi_taxonomic_levels', type, level)
-    print(f"Models directory: {model_dir}")
-    print("Generating or loading embeddings ...")
-    # generate embedding
-    embedding_path1 = os.path.join(embedding_dir, "test_embedding.csv")
-    embedding_path2 = os.path.join(embedding_dir, "test_dna_embed.csv")
+    
 
     if not os.path.exists(embedding_path1):
         test_seq = []
@@ -179,7 +178,6 @@ def main():
     test_embedding = np.concatenate((test_embedding, test_dna_embed), axis=1)
     test_embedding = standard_scaler.transform(test_embedding)
     test_embedding = torch.from_numpy(test_embedding).float().to(config.device)
-
 
 
     # load models
@@ -230,16 +228,13 @@ def main():
         if item >= threshold:
             preds_th.append(preds[i])
     # save results
-    wb = openpyxl.Workbook()
-    worksheet = wb.active
-    worksheet.title = "result"
-    header = ["ID", "Host", "Pred"]
-    worksheet.append(header)
-    for col_data in zip(test_ids, hosts, preds_th):
-        worksheet.append(col_data)
-    wb.save(result_file)
+    df_results = pd.DataFrame({
+        "ID": test_ids,
+        "Host": hosts,
+        "Pred": preds_th
+    })
+    df_results.to_csv(result_file, index=False)
     print(f"Saved prediction results to: {result_file}")
-    wb.close()
 
     if check:
         y_test = np.array(test_hosts)

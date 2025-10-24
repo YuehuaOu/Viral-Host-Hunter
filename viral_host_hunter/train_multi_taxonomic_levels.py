@@ -2,20 +2,23 @@ import warnings
 
 warnings.filterwarnings("ignore", category=Warning)
 
-import pandas as pd
-import pickle
 import argparse
 from Bio import SeqIO
-from torch import optim, nn
-from torch.utils.data import TensorDataset, DataLoader
-from torch.optim import lr_scheduler
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
-from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import pickle
 import numpy as np
 import os
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+import torch
+from torch import optim, nn
+from torch.utils.data import TensorDataset, DataLoader
+from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim import lr_scheduler
 
 from . import utils
+from .utils import *
 from .multi_taxonomic_levels_info import info
 from .embedding import get_embedding
 from .encoder_only_dna import encoder

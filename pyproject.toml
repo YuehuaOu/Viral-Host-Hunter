@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viral-host-hunter"
-version = "0.1.9"
+version = "0.1.10"
 description = "Viral-Host-Hunter: a predictive framework for decrypting viral dark matter and host interactions."
 authors = [
     { name = "Yuehua Ou", email = "ouyuehua2022@email.szu.edu.cn" }

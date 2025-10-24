@@ -26,13 +26,13 @@ This repository provides the datasets, model code, and usage accompanying the pa
   - [3.1 Reproducing VirHostHunter Training](#31-reproducing-virhosthunter-training)
     - [3.1.1 Data Preparation](#311-data-preparation)
     - [3.1.2 Model Training](#312-model-training)
-    - [3.1.3 Evaluation and Prediction](#313-evaluation-and-prediction)
+    - [3.1.3 Prediction and Evaluation](#313-prediction-and-evaluation)
   - [3.2  Training with Custom Datasets](#32--training-with-custom-datasets)
     - [3.2.1 Prepare Custom Dataset](#321-prepare-custom-dataset)
     - [3.2.2 Update Label Information](#322-update-label-information)
     - [3.2.3 Modify Training Script](#323-modify-training-script)
     - [3.2.4 Modify Predition Script](#324-modify-predition-script)
-    - [3.2.5 Model Training, Evaluation and Prediction](#325-model-training-evaluation-and-prediction)
+    - [3.2.5 Model Training, Prediction and Evaluation](#325-model-training-prediction-and-evaluation)
 - [Contact Information](#contact-information)
 - [License](#license)
 
@@ -72,11 +72,14 @@ pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https
 # 4. Install other dependencies
 pip install -r requirements.txt
 
-# 5. Install 
-## Option 1: 
+# 5. Install Pre-release Version (via Conda)
+# NOTE: Viral-Host-Hunter is currently under review for inclusion in Bioconda.
+#       Until approved, install the latest available version directly from the developer's channel:
 conda install -c wlhuang viral-host-hunter
-## Option 2: 
+# or
 conda install -c https://conda.anaconda.org/wlhuang viral-host-hunter
+# Once available on Bioconda, the recommended installation command will be:
+# conda install -c bioconda viral-host-hunter
 ```
 
 > **Notes**:
@@ -159,6 +162,11 @@ optional arguments:
                         Path to a local ProtT5 model directory for offline use. Required if the system has no internet access.
   --lineage             Append host lineage information to the output.
 ```
+
+For the `--phage_type` parameter:
+
+- `gut` indicates using the model trained on the gut_prophages dataset (corresponding to the disease-associated datasets in the paper)
+- `environment` indicates using the model trained on the multi_taxonomic_levels dataset (corresponding to the multi-taxonomic datasets in the paper).
 
 ## 2.2 Output Description
 
@@ -256,20 +264,20 @@ vhh-train-multi \
 --level family
 ```
 
-### 3.1.3 Evaluation and Prediction
+### 3.1.3 Prediction and Evaluation
 
 After training, models are evaluated by using the test datasets to calculate the metrics .
 
 **For the gut prophages dataset**, evaluation is performed using the `vhh-predict-gut` command:
 
 ```bash
-vhh-predict-gut --protein_file protein.fasta \
- --dna_file cds.fasta \
- --type tail \
- --level family \
- --precision -1 \
- --embedding_name test \
- --result_file results.csv
+vhh-predict-gut \
+--protein_file <path_to_data>/gut_prophages/lysin/species/test_protein.fasta \
+--dna_file <path_to_data>/gut_prophages/lysin/species/test_dna.fasta \
+--type lysin \
+--level species \
+--precision -1 \
+--result_file predict_gut_results.csv
 ```
 
 Tips:
@@ -317,8 +325,7 @@ vhh-predict-multi \
 --type tail \
 --level family \
 --precision -1 \
---embedding_name predict \
---result_file results.csv
+--result_file predict_multi_results.csv
 ```
 
 Similarily, run `vhh-predict-multi -h` to view all parameters and help message.
@@ -379,9 +386,9 @@ from .new_data_info import info
 
 Apply analogous modifications to the prediction script as you did for training. Use `predict_multi_taxonomic_levels.py` as a reference, and replace the label import with the customized label file.
 
-### 3.2.5 Model Training, Evaluation and Prediction
+### 3.2.5 Model Training, Prediction and Evaluation
 
-Follow the same procedures as described in Sections **4.1.2 Model Training** and **4.1.3 Evaluation and Prediction**.
+Follow the same procedures as described in Sections **3.1.2 Model Training** and **3.1.3 Prediction and Evaluation**.
 
 # Contact Information
 

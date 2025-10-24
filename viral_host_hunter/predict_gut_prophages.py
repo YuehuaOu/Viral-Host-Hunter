@@ -13,6 +13,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from torch.utils.data import TensorDataset, DataLoader
 
 from . import utils
+from .utils import *
 from .config import config
 from .gut_prophages_info import info
 from .embedding import get_embedding
@@ -232,7 +233,7 @@ def main():
         "Host": hosts,
         "Pred": preds_th
     })
-    df_results.to_excel(result_file, index=False, sheet_name="result")
+    df_results.to_csv(result_file, index=False)
     print(f"Saved prediction results to: {result_file}")
 
     if check:

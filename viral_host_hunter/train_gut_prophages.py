@@ -10,12 +10,14 @@ import os
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
+import torch
 from torch import optim, nn
 from torch.utils.data import TensorDataset, DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim import lr_scheduler
 
 from . import utils
+from .utils import *
 from .gut_prophages_info import info
 from .embedding import get_embedding
 from .encoder_only_dna import encoder
