@@ -1,3 +1,6 @@
+Version 0.1.11
+* Fixed some bugs.
+
 Version 0.1.10
 * Fixed some bugs.
 

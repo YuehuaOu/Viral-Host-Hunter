@@ -7,7 +7,7 @@ vhh-train-gut \
 --type lysin \
 --level species
 
-# Example 1.2 run predict_multi_taxonomic_levels.py (lysin, species, 95)
+# Example 1.2 run predict_gut_prophages.py (lysin, species, 95)
 vhh-predict-gut \
 --protein_file ./data/gut_prophages/lysin/species/test_protein.fasta \
 --dna_file ./data/gut_prophages/lysin/species/test_dna.fasta \

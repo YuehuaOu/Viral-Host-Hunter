@@ -227,6 +227,8 @@ def main():
     for i, item in enumerate(prob):
         if item >= threshold:
             preds_th.append(preds[i])
+        else:
+            preds_th.append("Unknown")
     # save results using pandas
     df_results = pd.DataFrame({
         "ID": test_ids,
