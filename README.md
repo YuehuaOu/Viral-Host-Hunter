@@ -388,4 +388,4 @@ Follow the same procedures as described in Sections **3.1.2 Model Training** and
 
 # License
 
-Viral-Host-Hunter is licensed under the ** GPL-3.0** - see the LICENSE.txt file for full details.
+Viral-Host-Hunter is licensed under the **GPL-3.0** - see the LICENSE.txt file for full details.
