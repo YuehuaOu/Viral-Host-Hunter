@@ -53,33 +53,21 @@ cd Viral-Host-Hunter
 
 ## 1.2 Setup Environment
 
-VirHostHunter was developed and tested with **Python 3.8, PyTorch 2.4.0, and CUDA 11.8.**
+VirHostHunter was developed and tested with **Python 3.9, PyTorch 2.4.0, and CUDA 11.8.**
 To ensure a smooth installation and proper functionality, we recommend creating a dedicated virtual environment and installing the required dependencies:
 
 ```bash
-# 1. Create a Python 3.8 environment
-conda create -n VHH python=3.8
+# 1. Create a Python 3.9 environment
+conda create -n VHH python=3.9
 
 # 2. Activate the environment
 conda activate VHH
 
 # 3. Install PyTorch compatible with CUDA 11.8
-## Option 1: Conda
 conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=11.8 -c pytorch -c nvidia
-## Option 2: Pip
-pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 --index-url https://download.pytorch.org/whl/cu118
 
-# 4. Install other dependencies
-pip install -r requirements.txt
-
-# 5. Install Pre-release Version (via Conda)
-# NOTE: Viral-Host-Hunter is currently under review for inclusion in Bioconda.
-#       Until approved, install the latest available version directly from the developer's channel:
-conda install -c wlhuang viral-host-hunter
-# or
-conda install -c https://conda.anaconda.org/wlhuang viral-host-hunter
-# Once available on Bioconda, the recommended installation command will be:
-# conda install -c bioconda viral-host-hunter
+# 4. Install vhh
+conda install -c bioconda viral-host-hunter
 ```
 
 > **Notes**:
@@ -284,6 +272,7 @@ Tips:
 
 - `--precision` sets the confidence threshold (95%, 84%, 69%, or -1 for no filtering).
 - If a custom model path was specified during training, the same path should be provided with the `--model_dir` option during prediction.
+- The directory for `--result_file` needs to be created in advance. We will fix this in the future to create it automatically.
 
 Run `vhh-predict-gut -h` to view all parameters and help message.
 
@@ -399,4 +388,4 @@ Follow the same procedures as described in Sections **3.1.2 Model Training** and
 
 # License
 
-Viral-Host-Hunter is licensed under the **GNU General Public License v3.0** - see the LICENSE.txt file for full details.
+Viral-Host-Hunter is licensed under the ** GPL-3.0** - see the LICENSE.txt file for full details.

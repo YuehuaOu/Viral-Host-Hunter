@@ -13,7 +13,7 @@ vhh-predict-gut \
 --dna_file ./data/gut_prophages/lysin/species/test_dna.fasta \
 --type lysin \
 --level species \
---result_file result/gut_prophages/lysin/species/results.csv \
+--result_file predict_result_gut_lysin_species.csv \
 --precision 95
 
 # Example 2.1 run train_multi_taxonomic_levels.py (tail, family)
@@ -31,6 +31,6 @@ vhh-predict-multi \
 --dna_file ./data/multi_taxonomic_levels/tail/family/test_dna.fasta \
 --type tail \
 --level family \
---result_file result/multi_taxonomic_levels/tail/family/results.csv \
+--result_file predict_result_multi_tail_family.csv \
 --precision 84
 

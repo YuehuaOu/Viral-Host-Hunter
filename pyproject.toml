@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viral-host-hunter"
-version = "0.1.11"
+version = "0.1.12"
 description = "Viral-Host-Hunter: a predictive framework for decrypting viral dark matter and host interactions."
 authors = [
     { name = "Yuehua Ou", email = "ouyuehua2022@email.szu.edu.cn" }
 ] 
 readme = "README.md"
-license = { text = "GPL-3.0" }
+license = { text = "GPL-3.0-or-later" }
 requires-python = ">=3.8"
 keywords = ["virus", "host", "prediction", "deep-learning", "bioinformatics"]
 dependencies = [
