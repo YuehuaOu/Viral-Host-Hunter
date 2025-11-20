@@ -109,7 +109,7 @@ Example data and command examples are provided in the `examples/` directory for 
 
 Please include the `--model_dir` parameter in the command to specify the location of the pretrained models. If necessary, also add the `--prott5_dir` parameter to indicate the directory where the downloaded ProtT5 model is located.
 
-Run the following command **in the Viral-Host-Hunter directory** to quickly test the installation with the example data.
+Run `sh examples/run_example.sh` or the following command **in the Viral-Host-Hunter directory** to quickly test the installation with the example data.
 
 ```bash
 vhh-predict \
