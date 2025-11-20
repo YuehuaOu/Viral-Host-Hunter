@@ -40,11 +40,13 @@ This repository provides the datasets, model code, and usage accompanying the pa
 # 1. Installation
 
 **GPU Recommendation:**
+
 We strongly recommend using a GPU for all steps (embedding generation, training, and prediction) to ensure reasonable performance and accuracy. While `vhh-predict` can run on CPU for the example data, ProtT5 execution is extremely slow on CPU and we cannot guarantee numerical precision or stability in this mode.
+
 In our case, we used an **NVIDIA GeForce RTX 3090 (24 GiB VRAM)** to generate 1024-dimensional embeddings and perform model training/prediction.
 
-Follow the steps below to complete the installation.
-We also provide demonstration videos showing successful installation and usage on multiple platforms: https://www.youtube.com/watch?v=qu0Hw80xRpY
+Follow the steps below to complete the installation. We also provide demonstration videos showing successful installation and usage on multiple platforms: https://www.youtube.com/watch?v=qu0Hw80xRpY
+
 🛠️ For any installation issues, feel free to contact us via GitHub issues or email.
 
 ## 1.1 Clone the Repository
@@ -57,6 +59,7 @@ cd Viral-Host-Hunter
 ## 1.2 Setup Environment
 
 VirHostHunter was developed and tested with **Python 3.9, PyTorch 2.4.0, and CUDA 11.8.**
+
 To ensure a smooth installation and proper functionality, we recommend creating a dedicated virtual environment and installing the required dependencies:
 
 ```bash
@@ -103,8 +106,8 @@ VirHostHunter also requires the pretrained **ProtT5-XL-UniRef50** model for gene
 ## 1.4 Quick Test
 
 Example data and command examples are provided in the `examples/` directory for quick verification of a successful installation.  
-Please include the `--model_dir` parameter in the command to specify the location of the pretrained models.  
-If necessary, also add the `--prott5_dir` parameter to indicate the directory where the downloaded ProtT5 model is located.
+
+Please include the `--model_dir` parameter in the command to specify the location of the pretrained models. If necessary, also add the `--prott5_dir` parameter to indicate the directory where the downloaded ProtT5 model is located.
 
 Run the following command **in the Viral-Host-Hunter directory** to quickly test the installation with the example data.
 
