@@ -9,9 +9,7 @@ VirHostHunter (VHH) addresses this challenge through a protein-centered, alignme
 This repository provides the datasets, model code, and usage accompanying the paper “Decrypting viral dark matter through key proteins using large language models”, supporting analyses and downstream applications in phage discovery and microbiome therapeutics.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [1. Installation](#1-installation)
@@ -33,6 +31,7 @@ This repository provides the datasets, model code, and usage accompanying the pa
     - [3.2.3 Modify Training Script](#323-modify-training-script)
     - [3.2.4 Modify Predition Script](#324-modify-predition-script)
     - [3.2.5 Model Training, Prediction and Evaluation](#325-model-training-prediction-and-evaluation)
+- [4 Troubleshooting](#4-troubleshooting)
 - [Contact Information](#contact-information)
 - [License](#license)
 
@@ -43,6 +42,10 @@ This repository provides the datasets, model code, and usage accompanying the pa
 **GPU Recommendation:**
 We strongly recommend using a GPU for all steps (embedding generation, training, and prediction) to ensure reasonable performance and accuracy. While `vhh-predict` can run on CPU for the example data, ProtT5 execution is extremely slow on CPU and we cannot guarantee numerical precision or stability in this mode.
 In our case, we used an **NVIDIA GeForce RTX 3090 (24 GiB VRAM)** to generate 1024-dimensional embeddings and perform model training/prediction.
+
+Follow the steps below to complete the installation.
+We also provide demonstration videos showing successful installation and usage on multiple platforms: https://www.youtube.com/watch?v=qu0Hw80xRpY
+🛠️ For any installation issues, feel free to contact us via GitHub issues or email.
 
 ## 1.1 Clone the Repository
 
@@ -78,6 +81,7 @@ conda install -c bioconda viral-host-hunter
 >   ```
 >   RuntimeError: CUDA error: no kernel image is available for execution on the device
 >   ```
+> - ⚠️ Please check whether your `transformers` package version is **<= 4.51**. If not, please manually downgrade your `transformers` package, otherwise it may cause errors during use. See Section [4 Troubleshooting](#4-troubleshooting) for more details.
 
 ## 1.3 Download Pretrained Models
 
@@ -98,7 +102,11 @@ VirHostHunter also requires the pretrained **ProtT5-XL-UniRef50** model for gene
 
 ## 1.4 Quick Test
 
-Example data and scripts are provided in the `examples/` directory for quick verification of a successful installation. Please include the `--model_dir` parameter in the command to specify the location of the pretrained models:
+Example data and command examples are provided in the `examples/` directory for quick verification of a successful installation.  
+Please include the `--model_dir` parameter in the command to specify the location of the pretrained models.  
+If necessary, also add the `--prott5_dir` parameter to indicate the directory where the downloaded ProtT5 model is located.
+
+Run the following command **in the Viral-Host-Hunter directory** to quickly test the installation with the example data.
 
 ```bash
 vhh-predict \
@@ -110,6 +118,14 @@ vhh-predict \
 --model_dir <path_to_models>
 ```
 
+If the command runs successfully, you should see a result similar to the following:
+<p align="center">
+  <img src="figures/Run_Example_ScreenShot.png" 
+       alt="Example Output" 
+       width="70%" 
+       style="border-radius: 10px;">
+</p>
+
 For detailed descriptions of all command-line parameters, see the Uasage section below.
 
 # 2 Usage
@@ -117,7 +133,7 @@ For detailed descriptions of all command-line parameters, see the Uasage section
 ## 2.1 Basic Usage
 
 Use the `vhh-predict` command to perform viral host prediction with the pretrained model.
-A runnable example is provided in `example/run_example.sh`.
+A command example is provided in `example/run_example.sh`.
 
 You can check all available command-line options by running:
 
@@ -379,11 +395,40 @@ Apply analogous modifications to the prediction script as you did for training. 
 
 Follow the same procedures as described in Sections **3.1.2 Model Training** and **3.1.3 Prediction and Evaluation**.
 
+# 4 Troubleshooting
+
+This chapter summarizes several issues reported by users during actual usage, along with explanations and suggested solutions.
+
+
+
+**torch.load Safety Check Error**
+
+Example error message:
+
+```
+in check_torch_load_is_safe
+raise ValueError(
+ValueError: Due to a serious vulnerability issue in torch.load, even with weights_only=True, we now require users to upgrade torch to at least v2.6 in order to use the function. This version restriction does not apply when loading files with safetensors.
+See the vulnerability report here https://nvd.nist.gov/vuln/detail/CVE-2025-32434
+```
+This error occurs because **`transformers >= 4.52`** introduces a mandatory safety check when calling `torch.load`. To avoid this issue, `torch >= 2.6` is required.  
+
+However, this project is currently based on **`torch = 2.4`**, so the recommended solution is to **downgrade `transformers` to version `4.51` or lower**:
+
+```
+conda install -c conda-forge transformers=4.51
+# or
+mamba install transformers=4.51 -c conda-forge
+```
+
+An `environment.yml` file is provided to help users verify and align their dependency versions. And We will support `torch==2.6` in the next release.
+
+
 # Contact Information
 
-1. Yuehua Ou, ouyuehua2022@email.szu.edu.cn
-2. Zihao Lin, 2410103047@mails.szu.edu.cn
-3. Min Li, limin19@mails.ucas.edu.cn
+1. Zihao Lin, 2410103047@mails.szu.edu.cn
+2. Min Li, limin19@mails.ucas.edu.cn
+3. Yuehua Ou, ouyuehua2022@email.szu.edu.cn
 4. Bo Xing, xingbo@genomics.cn
 
 # License
