@@ -1,39 +1,37 @@
 [build-system]
-requires = ["setuptools>=64", "wheel"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "viral-host-hunter"
-version = "0.1.12"
+version = "0.2.0"
 description = "Viral-Host-Hunter: a predictive framework for decrypting viral dark matter and host interactions."
 authors = [
     { name = "Yuehua Ou", email = "ouyuehua2022@email.szu.edu.cn" }
-] 
+]
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 requires-python = ">=3.8"
 keywords = ["virus", "host", "prediction", "deep-learning", "bioinformatics"]
 dependencies = [
-    "biopython==1.81",
-    "transformers==4.38.2",
-    "sentencepiece==0.2.0",
-    "scikit-learn==1.3.2",
-    "openpyxl==3.1.4",
-    "pandas==2.0.3",
-    "numpy==1.24.3",
-    "tqdm==4.67.1",
+    "biopython>=1.81",
+    "transformers>=4.37,<4.52",
+    "sentencepiece>=0.1.99",
+    "scikit-learn>=1.3.0,<1.4.0",
+    "openpyxl>=3.1",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "h5py>=3.11.0",
+    "tqdm>=4.60",
+    "torch>=2.3, <2.5"
 ]
 
-
 [project.scripts]
-vhh-predict= "viral_host_hunter.predict:main"
+vhh-predict = "viral_host_hunter.predict:main"
 vhh-train-gut = "viral_host_hunter.train_gut_prophages:main"
 vhh-predict-gut = "viral_host_hunter.predict_gut_prophages:main"
 vhh-train-multi = "viral_host_hunter.train_multi_taxonomic_levels:main"
 vhh-predict-multi = "viral_host_hunter.predict_multi_taxonomic_levels:main"
-
-
-
 
 [project.urls]
 Homepage = "https://github.com/YuehuaOu/Viral-Host-Hunter"
