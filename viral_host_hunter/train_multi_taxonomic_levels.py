@@ -1,10 +1,11 @@
-import warnings
+# import warnings
 
-warnings.filterwarnings("ignore", category=Warning)
+# warnings.filterwarnings("ignore", category=Warning)
 
 import argparse
 from Bio import SeqIO
 import pandas as pd
+import h5py
 import pickle
 import numpy as np
 import os
@@ -20,8 +21,7 @@ from torch.optim import lr_scheduler
 from . import utils
 from .utils import *
 from .multi_taxonomic_levels_info import info
-from .embedding import get_embedding
-from .encoder_only_dna import encoder
+from .embedding_io import ensure_embeddings, load_hdf5
 from .dataset import MyDataset
 from .autoencoder import AutoEncoder
 from .model import DnaPathNetworks
@@ -68,7 +68,7 @@ def parse():
         parser.add_argument(
             '--embedding_dir', type=str, default=None,
             help=(
-                'Directory to save/load precomputed embeddings (refer to prot_embedding.csv and dna_embedding.csv). '
+                'Directory to save/load precomputed embeddings (HDF5 files). '
                 'If embeddings are already available, the model will reuse them to reduce computation time. '
                 "(default: ./embeddings/multi_taxonomic_levels/{type}/{level})"
             )
@@ -155,64 +155,26 @@ def main():
 
     print("Generating or loading embeddings ...")
     # generate embedding
-    embedding_path1 = os.path.join(embedding_file, "train_embedding.csv")
-    embedding_path2 = os.path.join(embedding_file, "train_dna_embed.csv")
-    embedding_path3 = os.path.join(embedding_file, "val_embedding.csv")
-    embedding_path4 = os.path.join(embedding_file, "val_dna_embed.csv")
+    train_prot_h5 = os.path.join(embedding_file, "train_embedding.h5")
+    train_dna_h5 = os.path.join(embedding_file, "train_dna_embed.h5")
+    val_prot_h5 = os.path.join(embedding_file, "val_embedding.h5")
+    val_dna_h5 = os.path.join(embedding_file, "val_dna_embed.h5")
 
-    if not os.path.exists(embedding_path1):
-        train_seq = []
-        for i in range(len(train_proteins)):
-            zj = ''
-            for j in range(len(train_proteins[i]) - 1):
-                zj += train_proteins[i][j] + ' '
-            zj += train_proteins[i][-1]
-            train_seq.append(zj)
-        if prott5_dir is None:
-            train_emb = get_embedding(train_seq)
-        else:
-            train_emb = get_embedding(train_seq, prott5_dir)
-        np.savetxt(embedding_path1, train_emb, delimiter=',')
-        print(f"Saved train protein embeddings to: {embedding_path1}")
+    ensure_embeddings(train_prot_h5, train_dna_h5, train_proteins, train_cds, prott5_dir)
 
-        train_feature = encoder.features(train_cds)
-        np.savetxt(embedding_path2, train_feature, delimiter=',')
-        print(f"Saved train DNA embeddings to: {embedding_path2}")
-
-    if not os.path.exists(embedding_path3):
-        val_seq = []
-        for i in range(len(val_proteins)):
-            zj = ''
-            for j in range(len(val_proteins[i]) - 1):
-                zj += val_proteins[i][j] + ' '
-            zj += val_proteins[i][-1]
-            val_seq.append(zj)
-        if prott5_dir is None:
-            val_emb = get_embedding(val_seq)
-        else:
-            val_emb = get_embedding(val_seq, prott5_dir)
-        np.savetxt(embedding_path3, val_emb, delimiter=',')
-        print(f"Saved val protein embeddings to: {embedding_path3}")
-
-        val_feature = encoder.features(val_cds)
-        np.savetxt(embedding_path4, val_feature, delimiter=',')
-        print(f"Saved val DNA embeddings to: {embedding_path4}")
+    ensure_embeddings(val_prot_h5, val_dna_h5, val_proteins, val_cds, prott5_dir)
 
     print("Fitting standard scaler on training embeddings ...")
     standard_scaler = StandardScaler()
-    train_embedding = pd.read_csv(os.path.join(embedding_file, 'train_embedding.csv'), header=None)
-    train_embedding = np.array(train_embedding)
-    train_dna_embed = pd.read_csv(os.path.join(embedding_file, 'train_dna_embed.csv'), header=None)
-    train_dna_embed = np.array(train_dna_embed)
+    train_embedding = load_hdf5(train_prot_h5)
+    train_dna_embed = load_hdf5(train_dna_h5)
     train_embedding = np.concatenate((train_embedding, train_dna_embed), axis=1)
     standard_scaler = standard_scaler.fit(train_embedding)
     utils.save_pickle(standard_scaler, os.path.join(output_dir, 'standard_scaler.pkl'))
     print(f"Saved standard scaler to: {os.path.join(output_dir, 'standard_scaler.pkl')}")
 
-    val_embedding = pd.read_csv(os.path.join(embedding_file, 'val_embedding.csv'), header=None)
-    val_embedding = np.array(val_embedding)
-    val_dna_embed = pd.read_csv(os.path.join(embedding_file, 'val_dna_embed.csv'), header=None)
-    val_dna_embed = np.array(val_dna_embed)
+    val_embedding = load_hdf5(val_prot_h5)
+    val_dna_embed = load_hdf5(val_dna_h5)
     val_embedding = np.concatenate((val_embedding, val_dna_embed), axis=1)
 
     print("Scaling embeddings ...")

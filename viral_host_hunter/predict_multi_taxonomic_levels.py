@@ -5,6 +5,7 @@ import argparse
 from Bio import SeqIO
 import pandas as pd
 import openpyxl
+import h5py
 import numpy as np
 import os
 from sklearn.preprocessing import StandardScaler
@@ -15,8 +16,7 @@ from . import utils
 from .utils import *
 from .config import config
 from .multi_taxonomic_levels_info import info
-from .embedding import get_embedding
-from .encoder_only_dna import encoder
+from .embedding_io import ensure_embeddings, load_hdf5
 from .dataset import MyDataset
 from .autoencoder import AutoEncoder
 from .model import *
@@ -39,8 +39,8 @@ def parse():
         help='Path to the corresponding DNA FASTA file for prediction.'
     )
     parser.add_argument(
-        '--result_file', type=str, required=True,
-        help='Path to save the prediction results.'
+        '--result_dir', type=str, required=True,
+        help='Directory to save the prediction results.'
     )
     parser.add_argument(
         '--level', choices=['family', 'genus', 'species'], type=str, required=True,
@@ -86,7 +86,7 @@ def main():
     type = args.type
     level = args.level
     embedding_dir = args.embedding_dir
-    result_file = args.result_file
+    result_dir = args.result_dir
     pre = args.precision
     model_dir = args.model_dir
     prott5_dir = args.prott5_dir
@@ -100,8 +100,8 @@ def main():
     print(f"Models directory: {model_dir}")
     print("Generating or loading embeddings ...")
     # generate embedding
-    embedding_path1 = os.path.join(embedding_dir, "test_embedding.csv")
-    embedding_path2 = os.path.join(embedding_dir, "test_dna_embed.csv")
+    prot_h5 = os.path.join(embedding_dir, "test_embedding.h5")
+    dna_h5 = os.path.join(embedding_dir, "test_dna_embed.h5")
 
 
     thresholds = {
@@ -140,30 +140,10 @@ def main():
     test_dataset = MyDataset(test_cds, test_labels, config.k)
     test_dataloader = DataLoader(test_dataset, batch_size=10, shuffle=False)
 
-    # num_class
-    config.num_class = max(info[type][level].values()) + 1
-
-    int2word = int2str(info[type][level])
-
-    
-
-    if not os.path.exists(embedding_path1):
-        test_seq = []
-        for i in range(len(test_proteins)):
-            zj = ''
-            for j in range(len(test_proteins[i]) - 1):
-                zj += test_proteins[i][j] + ' '
-            zj += test_proteins[i][-1]
-            test_seq.append(zj)
-        if prott5_dir is None:
-            test_emb = get_embedding(test_seq)
-        else:
-            test_emb = get_embedding(test_seq, prott5_dir)
-        np.savetxt(embedding_path1, test_emb, delimiter=',')
-
-    if not os.path.exists(embedding_path2):
-        test_feature = encoder.features(test_cds)
-        np.savetxt(embedding_path2, test_feature, delimiter=',')
+    # generate embedding
+    prot_h5 = os.path.join(embedding_dir, "test_embedding.h5")
+    dna_h5 = os.path.join(embedding_dir, "test_dna_embed.h5")
+    ensure_embeddings(prot_h5, dna_h5, test_proteins, test_cds, prott5_dir)
 
     # get embedding
     print("Loading standard scaler and models ...")
@@ -171,10 +151,8 @@ def main():
     standard_scaler = StandardScaler()
     standard_scaler = utils.load_pickle(standard_path)
 
-    test_embedding = pd.read_csv(os.path.join(embedding_dir, "test_embedding.csv"), header=None)
-    test_embedding = np.array(test_embedding)
-    test_dna_embed = pd.read_csv(os.path.join(embedding_dir, 'test_dna_embed.csv'), header=None)
-    test_dna_embed = np.array(test_dna_embed)
+    test_embedding = load_hdf5(prot_h5)
+    test_dna_embed = load_hdf5(dna_h5)
     test_embedding = np.concatenate((test_embedding, test_dna_embed), axis=1)
     test_embedding = standard_scaler.transform(test_embedding)
     test_embedding = torch.from_numpy(test_embedding).float().to(config.device)
@@ -230,6 +208,8 @@ def main():
         else:
             preds_th.append("Unknown")
     # save results
+    os.makedirs(result_dir, exist_ok=True)
+    result_file = os.path.join(result_dir, "predict_result.csv")
     df_results = pd.DataFrame({
         "ID": test_ids,
         "Host": hosts,

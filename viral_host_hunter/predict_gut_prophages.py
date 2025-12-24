@@ -6,6 +6,7 @@ import argparse
 from Bio import SeqIO
 import pandas as pd
 import openpyxl
+import h5py
 import numpy as np
 import os
 from sklearn.preprocessing import StandardScaler
@@ -39,8 +40,8 @@ def parse():
         help='Path to the corresponding DNA FASTA file for prediction.'
     )
     parser.add_argument(
-        '--result_file', type=str, required=True,
-        help='Path to save the prediction results.'
+        '--result_dir', type=str, required=True,
+        help='Directory to save the prediction results.'
     )
     parser.add_argument(
         '--level', choices=['family', 'genus', 'species'], type=str, required=True,
@@ -86,7 +87,7 @@ def main():
     type = args.type
     level = args.level
     embedding_dir = args.embedding_dir
-    result_file = args.result_file
+    result_dir = args.result_dir
     pre = args.precision
     model_dir = args.model_dir
     prott5_dir = args.prott5_dir
@@ -100,8 +101,8 @@ def main():
     print(f"Models directory: {model_dir}")
     print("Generating or loading embeddings ...")
     # generate embedding
-    embedding_path1 = os.path.join(embedding_dir, "test_embedding.csv")
-    embedding_path2 = os.path.join(embedding_dir, "test_dna_embed.csv")
+    prot_h5 = os.path.join(embedding_dir, "test_embedding.h5")
+    dna_h5 = os.path.join(embedding_dir, "test_dna_embed.h5")
 
 
     thresholds = {
@@ -147,7 +148,7 @@ def main():
     int2word = {k: 'Mediterraneibacter gnavus' if v == 'Ruminococcus_gnavas' else 'Ruminococcus torques' if v == 'Ruminococcus_torques' else v for k, v in int2word.items()}
     int2word = {k: 'Bacillaceae' if v == 'Caryophanales' else v for k, v in int2word.items()}
 
-    if not os.path.exists(embedding_path1):
+    if not os.path.exists(prot_h5):
         test_seq = []
         for i in range(len(test_proteins)):
             zj = ''
@@ -159,11 +160,13 @@ def main():
             test_emb = get_embedding(test_seq)
         else:
             test_emb = get_embedding(test_seq, prott5_dir)
-        np.savetxt(embedding_path1, test_emb, delimiter=',')
+        with h5py.File(prot_h5, 'w') as f:
+            f.create_dataset('data', data=test_emb, compression='gzip')
 
-    if not os.path.exists(embedding_path2):
+    if not os.path.exists(dna_h5):
         test_feature = encoder.features(test_cds)
-        np.savetxt(embedding_path2, test_feature, delimiter=',')
+        with h5py.File(dna_h5, 'w') as f:
+            f.create_dataset('data', data=test_feature, compression='gzip')
 
     # get embedding
     print("Loading standard scaler and models ...")
@@ -171,10 +174,10 @@ def main():
     standard_scaler = StandardScaler()
     standard_scaler = utils.load_pickle(standard_path)
 
-    test_embedding = pd.read_csv(os.path.join(embedding_dir, 'test_embedding.csv'), header=None)
-    test_embedding = np.array(test_embedding)
-    test_dna_embed = pd.read_csv(os.path.join(embedding_dir, 'test_dna_embed.csv'), header=None)
-    test_dna_embed = np.array(test_dna_embed)
+    with h5py.File(prot_h5, 'r') as f:
+        test_embedding = f['data'][:]
+    with h5py.File(dna_h5, 'r') as f:
+        test_dna_embed = f['data'][:]
     test_embedding = np.concatenate((test_embedding, test_dna_embed), axis=1)
     test_embedding = standard_scaler.transform(test_embedding)
     test_embedding = torch.from_numpy(test_embedding).float().to(config.device)
@@ -230,6 +233,8 @@ def main():
         else:
             preds_th.append("Unknown")
     # save results using pandas
+    os.makedirs(result_dir, exist_ok=True)
+    result_file = os.path.join(result_dir, "predict_result.csv")
     df_results = pd.DataFrame({
         "ID": test_ids,
         "Host": hosts,

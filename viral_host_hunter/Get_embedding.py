@@ -1,6 +1,7 @@
 import pandas as pd
 import ast
 import numpy as np
+import h5py
 from .embedding import get_embedding
 from .encoder_only_dna import encoder
 
@@ -15,17 +16,18 @@ def compute_embedding(proteins, cds, ids, embedding_file):
         seq.append(zj)
     emb = get_embedding(seq)
     feature = encoder.features(cds)
-    data = {'id': ids, 'protein_embedding': emb.tolist(), 'dna_embedding': feature.tolist()}
-    df = pd.DataFrame(data)
-    df.to_excel(embedding_file, index=False)
+    with h5py.File(embedding_file, 'w') as f:
+        f.create_dataset('id', data=np.array(ids, dtype='S'), compression='gzip')
+        f.create_dataset('protein_embedding', data=emb, compression='gzip')
+        f.create_dataset('dna_embedding', data=feature, compression='gzip')
 
 
-def take_embedding(embeddiing_file, ids):
-    df = pd.read_excel(embeddiing_file)
-    df.set_index("id", inplace=True)
-    protein_embedding = np.array(df.loc[ids]["protein_embedding"].apply(ast.literal_eval))
-    dna_embedding = np.array(df.loc[ids]["dna_embedding"].apply(ast.literal_eval))
-    protein_embedding = np.vstack(protein_embedding)
-    dna_embedding = np.vstack(dna_embedding)
+def take_embedding(embedding_file, ids):
+    with h5py.File(embedding_file, 'r') as f:
+        stored_ids = [sid.decode() for sid in f['id'][:]]
+        idx_map = {sid: i for i, sid in enumerate(stored_ids)}
+        indices = [idx_map[i] for i in ids]
+        protein_embedding = f['protein_embedding'][indices]
+        dna_embedding = f['dna_embedding'][indices]
     embedding = np.concatenate((protein_embedding, dna_embedding), axis=1)
     return embedding

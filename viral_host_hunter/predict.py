@@ -1,5 +1,5 @@
-import warnings
-warnings.filterwarnings("ignore", category=Warning)
+# import warnings
+# warnings.filterwarnings("ignore", category=Warning)
 
 import os
 import gc
@@ -8,6 +8,7 @@ import pickle
 
 import numpy as np
 import pandas as pd
+import h5py
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
@@ -18,8 +19,7 @@ from Bio import SeqIO
 
 from . import utils
 from .dataset import MyDataset
-from .embedding import get_embedding
-from .encoder_only_dna import encoder
+from .embedding_io import ensure_embeddings, load_hdf5
 from .autoencoder import AutoEncoder
 from .model import *
 from .config import config
@@ -69,7 +69,7 @@ def parse():
     parser.add_argument(
         '--embedding_dir', type=str, default='./embeddings',
         help=(
-            'Directory to save/load precomputed embeddings (refer to prot_embedding.csv, dna_embedding.csv). '
+            'Directory to save/load precomputed embeddings (prot_embedding.h5, dna_embedding.h5). '
             'If embeddings already exist, they will be reused to speed up prediction. '
             '(default: ./embeddings)'
         )
@@ -77,6 +77,10 @@ def parse():
     parser.add_argument(
         '--output_dir', type=str, default='./output',
         help='Directory to save prediction results. (default: ./output)'
+    )
+    parser.add_argument(
+        '--output_format', type=str, choices=['csv', 'tsv', 'xlsx', 'both'], default='csv',
+        help='Output format for prediction results.'
     )
     parser.add_argument(
         '--prott5_dir', type=str, default=None,
@@ -154,6 +158,7 @@ def main():
     output_dir = args.output_dir
     prott5_dir = args.prott5_dir
     use_lineage = args.lineage
+    output_format = args.output_format
     
     os.makedirs(embedding_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
@@ -191,49 +196,23 @@ def main():
     
     # Generate embeddings
     print("Generating embeddings...")
-    embedding_path1 = os.path.join(embedding_dir, "prot_embedding.csv")
-    embedding_path2 = os.path.join(embedding_dir, "dna_embedding.csv")
-    
-    if not os.path.exists(embedding_path1):
-        test_seq = []
-        for i in range(len(test_proteins)):
-            zj = ''
-            for j in range(len(test_proteins[i]) - 1):
-                zj += test_proteins[i][j] + ' '
-            zj += test_proteins[i][-1]
-            test_seq.append(zj)
-        if prott5_dir is None:
-            test_emb = get_embedding(test_seq)
-        else:
-            test_emb = get_embedding(test_seq, prott5_dir)
-        np.savetxt(embedding_path1, test_emb, delimiter=',')
-        print(f"Saving protein embedding file to {embedding_path1}")
-        
-    else:
-        print("The protein embedding file exists, generation skipped.")
-        print("- Attention: If you replace the sample with a new one but do not modify the embedding_dir, the embeddings used will be the old ones that do not correspond, which will result in incorrect results.")
- 
-    if not os.path.exists(embedding_path2):
-        test_feature = encoder.features(test_cds)
-        np.savetxt(embedding_path2, test_feature, delimiter=',')
-        print(f"Saving DNA embedding file to {embedding_path2}")
-    else:
-        print("The DNA embedding file exists, generation skipped.")
+    prot_h5 = os.path.join(embedding_dir, "prot_embedding.h5")
+    dna_h5 = os.path.join(embedding_dir, "dna_embedding.h5")
+    ensure_embeddings(prot_h5, dna_h5, test_proteins, test_cds, prott5_dir)
 
     # Load raw embedding arrays (shared across levels)
-    test_prot_embed = pd.read_csv(embedding_path1, header=None)
-    test_prot_embed = np.array(test_prot_embed)
-    test_dna_embed = pd.read_csv(embedding_path2, header=None)
-    test_dna_embed = np.array(test_dna_embed)
+    test_prot_embed = load_hdf5(prot_h5)
+    test_dna_embed = load_hdf5(dna_h5)
     concat_embedding = np.concatenate((test_prot_embed, test_dna_embed), axis=1)
     
     # Determine levels to run
     levels_to_run = ['family', 'genus', 'species'] if level == 'all' else [level]
     
-    # Prepare Excel writer
-    output_file = os.path.join(output_dir, "predict_result.xlsx")
-    with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-        for lvl in levels_to_run:
+    excel_path = os.path.join(output_dir, "predict_result.xlsx")
+    writer = None
+    if output_format in ['xlsx', 'both']:
+        writer = pd.ExcelWriter(excel_path, engine='openpyxl')
+    for lvl in levels_to_run:
             print(f"{'*' * 20}")
             print(f"Processing level: {lvl}")
 
@@ -335,7 +314,14 @@ def main():
                     'Confidence_95%': threshold_results['95'],
                 }
             results_df = pd.DataFrame(results_data)
-            results_df.to_excel(writer, sheet_name=lvl, index=False)
+            if writer is not None:
+                results_df.to_excel(writer, sheet_name=lvl, index=False)
+            if output_format in ['csv', 'both']:
+                out_csv = os.path.join(output_dir, f"predict_result_{lvl}.csv")
+                results_df.to_csv(out_csv, index=False)
+            if output_format == 'tsv':
+                out_tsv = os.path.join(output_dir, f"predict_result_{lvl}.tsv")
+                results_df.to_csv(out_tsv, index=False, sep='\t')
             
             # Console summary per level
             # for conf_level in ['95', '84', '69']:
@@ -378,10 +364,16 @@ def main():
                     pass
             gc.collect()
 
+    if writer is not None:
+        writer.close()
     print("\nPrediction complete!")
-    print(f"Saving results to: {output_file}")
+    if output_format in ['xlsx', 'both']:
+        print(f"Saving Excel results to: {excel_path}")
+    if output_format in ['csv', 'both']:
+        print(f"Saving CSV results to: {output_dir}")
+    if output_format == 'tsv':
+        print(f"Saving TSV results to: {output_dir}")
 
 
 if __name__ == "__main__":
     main()
-
