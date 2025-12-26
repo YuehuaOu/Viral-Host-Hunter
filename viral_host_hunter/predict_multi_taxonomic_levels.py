@@ -91,8 +91,10 @@ def main():
     model_dir = args.model_dir
     prott5_dir = args.prott5_dir
 
-    if embedding_dir is None:
-        embedding_dir = os.path.join('.', 'embedding', 'multi_taxonomic_levels', type, level)
+    config.num_class = max(info[type][level].values()) + 1
+    int2word = int2str(info[type][level])
+
+    if embedding_dir is None:os.path.join('.', 'embedding', 'multi_taxonomic_levels', type, level)
     os.makedirs(embedding_dir, exist_ok=True)
     print(f"Embedding directory: {embedding_dir}")
     if model_dir is None:
