@@ -18,7 +18,7 @@ This repository provides the datasets, model code, and usage accompanying the pa
   - [1.3 Download Pretrained Models](#13-download-pretrained-models)
   - [1.4 Quick Test](#14-quick-test)
 - [2 Usage](#2-usage)
-  - [2.1 Basic Usage](#21-basic-usage)
+  - [2.1 Parameters](#21-parameters)
   - [2.2 Output Description](#22-output-description)
 - [3 Training (Optional)](#3-training-optional)
   - [3.1 Reproducing VirHostHunter Training](#31-reproducing-virhosthunter-training)
@@ -63,17 +63,20 @@ VirHostHunter was developed and tested with **Python 3.9, PyTorch 2.4.0, and CUD
 To ensure a smooth installation and proper functionality, we recommend creating a dedicated virtual environment and installing the required dependencies:
 
 ```bash
-# 1. Create a Python 3.9 environment
+# Environment setup: Create Python 3.9 venv and activate it
 conda create -n VHH python=3.9
-
-# 2. Activate the environment
 conda activate VHH
 
-# 3. Install PyTorch compatible with CUDA 11.8
-conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+# Install vhh
 
-# 4. Install vhh
+## Methods 1: via pip
+pip install git+https://github.com/YuehuaOu/Viral-Host-Hunter.git
+
+## Methods 2: via conda
+conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=11.8 -c pytorch -c nvidia
 conda install -c bioconda viral-host-hunter
+conda install -c conda-forge transformers=4.51 # 5. Install transformers 4.51 (To be included in bioconda viral-host-hunter v0.2.0)
+
 ```
 
 > **Notes**:
@@ -105,20 +108,13 @@ VirHostHunter also requires the pretrained **ProtT5-XL-UniRef50** model for gene
 
 ## 1.4 Quick Test
 
-Example data and command examples are provided in the `examples/` directory for quick verification of a successful installation.  
+Run `./examples/run_example.sh <model_dir> [prott5_dir]` **in the Viral-Host-Hunter directory** to quickly test the installation with the example data. 
 
-Please include the `--model_dir` parameter in the command to specify the location of the pretrained models. If necessary, also add the `--prott5_dir` parameter to indicate the directory where the downloaded ProtT5 model is located.
-
-Run `sh examples/run_example.sh` or the following command **in the Viral-Host-Hunter directory** to quickly test the installation with the example data.
 
 ```bash
-vhh-predict \
---protein ./examples/gut/tail/protein.fasta \
---dna ./examples/gut/tail/dna.fasta \
---phage_type gut --seq_type tail \
---embedding_dir ./examples/embedding \
---output_dir ./examples/output \
---model_dir <path_to_models>
+bash ./examples/run_example.sh /path/to/models_dir               # online ProtT5
+# or
+bash ./examples/run_example.sh /path/to/models_dir /path/to/prott5_dir   # offline ProtT5
 ```
 
 If the command runs successfully, you should see a result similar to the following:
@@ -129,57 +125,50 @@ If the command runs successfully, you should see a result similar to the followi
        style="border-radius: 10px;">
 </p>
 
-For detailed descriptions of all command-line parameters, see the Uasage section below.
-
 # 2 Usage
 
-## 2.1 Basic Usage
-
 Use the `vhh-predict` command to perform viral host prediction with the pretrained model.
-A command example is provided in `example/run_example.sh`.
 
-You can check all available command-line options by running:
+Example:
 
-```
-$ vhh-predict -h
-usage: vhh-predict [-h] --protein PROTEIN --dna DNA --seq_type {tail,lysin} [--phage_type {gut,environment}]
-                   [--level {all,family,genus,species}] [--model_dir MODEL_DIR] [--embedding_dir EMBEDDING_DIR]
-                   [--output_dir OUTPUT_DIR] [--prott5_dir PROTT5_DIR] [--lineage]
-
-Run the Viral-Host-Hunter prediction pipeline for viral host identification based on protein and DNA sequences.
-
-optional arguments:
-  -h, --help            Show this help message and exit
-  --protein PROTEIN     Path to the input protein FASTA file.
-  --dna DNA             Path to the corresponding DNA FASTA file.
-  --seq_type {tail,lysin}
-                        Protein type used for prediction: "tail" or "lysin".
-  --phage_type {gut,environment}
-                        Phage source type: "gut" for intestinal phages, or "environment" for environmental phages. (default: gut)
-  --level {all,family,genus,species}
-                        Taxonomic level: "all", "family", "genus", or "species". (default: all)
-  --model_dir MODEL_DIR
-                        Directory containing the pretrained Viral-Host-Hunter models.
-  --embedding_dir EMBEDDING_DIR
-                        Directory to save or load precomputed embeddings (prot_embedding.csv, dna_embedding.csv).
-                        Existing embeddings will be reused to speed up prediction. (default: ./embeddings)
-  --output_dir OUTPUT_DIR
-                        Directory to save prediction results. (default: ./output)
-  --prott5_dir PROTT5_DIR
-                        Path to a local ProtT5 model directory for offline use. Required if the system has no internet access.
-  --lineage             Append host lineage information to the output.
+```bash
+vhh-predict \
+--protein /path/to/your/protein.fasta \
+--dna /path/to/your/dna.fasta \
+--seq_type tail \
+--model_dir /path/to/models_dir
+--phage_type gut
 ```
 
-For the `--phage_type` parameter:
+## 2.1 Parameters
 
-- `gut` indicates using the model trained on the gut_prophages dataset (corresponding to the disease-associated datasets in the paper)
-- `environment` indicates using the model trained on the multi_taxonomic_levels dataset (corresponding to the multi-taxonomic datasets in the paper).
+
+| Category | Argument | Description | Default / Options |
+| :--- | :--- | :--- | :--- |
+| **Input** | `--protein` | **(Required)** Path to the protein FASTA file. | - |
+| | `--dna` | **(Required)** Path to the corresponding DNA FASTA file. | - |
+| | `--seq_type` | **(Required)** Protein type for prediction. | `tail`, `lysin` |
+| **Model** | `--model_dir` | **(Required)** Directory containing trained models. | - |
+| | `--phage_type` | Phage source environment (see details below). | `gut` (default), `environment` |
+| | `--level` | Taxonomic prediction depth. | `all` (default), `family`, `genus`, `species` |
+| Output | `--output_dir` | Directory to save prediction results. | `./output` |
+| | `--output_format`| File format for results. | `csv`, `tsv`, `xlsx`, `both` |
+| | `--lineage` | Flag: Append full lineage columns to output. | *Disabled* |
+| Other | `--embedding_dir` | Directory to save/load precomputed embeddings. | `./embeddings` |
+| | `--prott5_dir` | Local ProtT5 path for **offline** mode. | - |
+
+> **Note on `--phage_type`:**
+> - `gut`: Uses the model trained on the **gut_prophages** dataset (disease-associated datasets in the paper).
+> - `environment`: Uses the model trained on the **multi_taxonomic_levels** dataset (multi-taxonomic datasets in the paper).
+
+
+
+
+
 
 ## 2.2 Output Description
 
-Prediction results are saved to `$OUTPUT_DIR/predict_result.xlsx` which includes three sheets for family, genus, and species-level predictions.
-
-Each sheet follows the structure below:
+Prediction results land in $OUTPUT_DIR. All outputs share the same column layout:
 
 - Columns 1–2: Input protein and DNA sequence ID
 - Columns 4–7: Predicted hosts at different confidence thresholds (no threshold, 69%, 84%, 95%)
@@ -215,9 +204,16 @@ Models can be trained for different datasets using the provided scripts:
 - `vhh-train-gut`: training models on the gut prophage dataset
 - `vhh-train-multi`: training models on the environmental phage dataset
 
-Example command for **training on the gut prophage dataset**:
+*For more detailed parameter information, you can always run:*
+```bash
+vhh-train-gut -h
+vhh-train-multi -h
+```
+
+Command Examples：
 
 ```bash
+# Train models on the gut prophage dataset (lysin phage, species level)
 vhh-train-gut \
 --train_protein <path_to_data>/gut_prophages/lysin/species/train_protein.fasta \
 --train_dna <path_to_data>/gut_prophages/lysin/species/train_dna.fasta \
@@ -225,43 +221,8 @@ vhh-train-gut \
 --val_dna <path_to_data>/gut_prophages/lysin/species/val_dna.fasta \
 --type lysin \
 --level species
-```
 
-Use `--type` and `--level` to train models for different phage types and taxonomic levels. Run `vhh-train-gut -h` to view the command-line help message:
-
-```
-$ vhh-train-gut -h
-usage: vhh-train-gut [-h] --train_protein TRAIN_PROTEIN --train_dna TRAIN_DNA --val_protein VAL_PROTEIN --val_dna VAL_DNA --level {family,genus,species} --type
-                     {tail,lysin} [--output_dir OUTPUT_DIR] [--embedding_dir EMBEDDING_DIR] [--prott5_dir PROTT5_DIR]
-
-Train the Viral-Host-Hunter model for gut-associated phage host prediction. This script trains a multi-modal classifier using tail or lysin proteins and their
-corresponding DNA sequences to predict bacterial hosts at the family, genus, or species level.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --train_protein TRAIN_PROTEIN
-                        Path to the training protein FASTA file.
-  --train_dna TRAIN_DNA
-                        Path to the corresponding training DNA FASTA file.
-  --val_protein VAL_PROTEIN
-                        Path to the validation protein FASTA file.
-  --val_dna VAL_DNA     Path to the corresponding validation DNA FASTA file.
-  --level {family,genus,species}
-                        Taxonomic classification level of the prediction model: "family", "genus", or "species".
-  --type {tail,lysin}   Protein type used for model training: "tail"or "lysin".
-  --output_dir OUTPUT_DIR
-                        Directory to save trained model. (default: ./model/gut_prophages/{type}/{level})
-  --embedding_dir EMBEDDING_DIR
-                        Directory to save/load precomputed embeddings (refer to prot_embedding.csv and dna_embedding.csv). If embeddings are already available,
-                        the model will reuse them to reduce computation time. (default: ./embeddings/gut_prophages/{type}/{level})
-  --prott5_dir PROTT5_DIR
-                        Path to a local ProtT5 model directory for offline embedding generation. Use this option if the system cannot download the model from
-                        the internet. (default: None)
-```
-
-Similarly, **for the environmental phage dataset**, you can run the `vhh-train-multi` command to train. For example:
-
-```bash
+# Train models on the environmental phage dataset (tail phage, family level)
 vhh-train-multi \
 --train_protein <path_to_data>/multi_taxonomic_levels/tail/family/train_protein.fasta \
 --train_dna <path_to_data>/multi_taxonomic_levels/tail/family/train_dna.fasta \
@@ -270,21 +231,43 @@ vhh-train-multi \
 --type tail \
 --level family
 ```
+Tips:
+- Use `--type` and `--level` to train models for different phage types and taxonomic levels. 
+
 
 ### 3.1.3 Prediction and Evaluation
 
-After training, models are evaluated by using the test datasets to calculate the metrics .
+After training, models are evaluated by using the test datasets to calculate the metrics:
 
-**For the gut prophages dataset**, evaluation is performed using the `vhh-predict-gut` command:
+- `vhh-predict-gut`: predicts and evaluates for the gut prophage dataset
+- `vhh-predict-multi`: predicts and evaluates hosts for the environmental phage dataset
+
+*For more detailed parameter information, you can always run:*
+```bash
+vhh-predict-gut -h
+vhh-predict-multi -h
+```
+
+Command Examples：
 
 ```bash
+# Predict and evaluate for the gut prophage dataset
 vhh-predict-gut \
 --protein_file <path_to_data>/gut_prophages/lysin/species/test_protein.fasta \
 --dna_file <path_to_data>/gut_prophages/lysin/species/test_dna.fasta \
 --type lysin \
 --level species \
 --precision -1 \
---result_file predict_gut_results.csv
+--result_dir /path/to/output_dir
+
+# Predict and evaluate for the environmental phage dataset
+vhh-predict-multi \
+--protein_file <path_to_data>/multi_taxonomic_levels/tail/family/test_protein.fasta \
+--dna_file <path_to_data>/multi_taxonomic_levels/tail/family/test_dna.fasta \
+--type tail \
+--level family \
+--precision -1 \
+--result_dir /path/to/output_dir
 ```
 
 Tips:
@@ -293,50 +276,6 @@ Tips:
 - If a custom model path was specified during training, the same path should be provided with the `--model_dir` option during prediction.
 - The directory for `--result_file` needs to be created in advance. We will fix this in the future to create it automatically.
 
-Run `vhh-predict-gut -h` to view all parameters and help message.
-
-```
-$ vhh-predict-gut -h
-usage: vhh-predict-gut [-h] --protein_file PROTEIN_FILE --dna_file DNA_FILE --result_file RESULT_FILE --level {family,genus,species} --type {tail,lysin} --precision
-                       {95,84,69,-1} [--embedding_dir EMBEDDING_DIR] [--model_dir MODEL_DIR] [--prott5_dir PROTT5_DIR]
-
-Run the Viral-Host-Hunter prediction pipeline for gut-associated phage host prediction based on protein and DNA sequence embeddings.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --protein_file PROTEIN_FILE
-                        Path to the protein FASTA file for prediction.
-  --dna_file DNA_FILE   Path to the corresponding DNA FASTA file for prediction.
-  --result_file RESULT_FILE
-                        Path to save the prediction results.
-  --level {family,genus,species}
-                        Taxonomic classification level for prediction: "family", "genus", or "species".
-  --type {tail,lysin}   Protein type used for prediction: "tail" or "lysin".
-  --precision {95,84,69,-1}
-                        Prediction confidence threshold. "95", "84", and "69" correspond to models with different confidence cutoffs; "-1" uses predictions without
-                        threshold filtering.
-  --embedding_dir EMBEDDING_DIR
-                        Directory containing precomputed embedding files.
-  --model_dir MODEL_DIR
-                        Directory containing trained gut phage prediction models. (default: ./models/gut_prophages/{type}/{level})
-  --prott5_dir PROTT5_DIR
-                        Path to a local ProtT5 model directory for offline embedding generation. Use this option if the system cannot download the model from the
-                        internet. (default: None)
-```
-
-**For the environmental phage dataset**, evaluation is conducted using the `vhh-predict-multi` command:
-
-```bash
-vhh-predict-multi \
---protein_file <path_to_data>/multi_taxonomic_levels/tail/family/test_protein.fasta \
---dna_file <path_to_data>/multi_taxonomic_levels/tail/family/test_dna.fasta \
---type tail \
---level family \
---precision -1 \
---result_file predict_multi_results.csv
-```
-
-Similarily, run `vhh-predict-multi -h` to view all parameters and help message.
 
 ## 3.2  Training with Custom Datasets
 
