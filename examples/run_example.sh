@@ -28,7 +28,6 @@ vhh-predict \
 --protein "$PROTEIN" \
 --dna "$DNA" \
 --phage_type gut --seq_type tail \
---lineage \
 --embedding_dir "$EMBED_DIR" \
 --output_dir "$OUT_DIR" \
 --model_dir "$MODEL_DIR" \
