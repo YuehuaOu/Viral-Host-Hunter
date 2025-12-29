@@ -8,110 +8,122 @@ VirHostHunter (VHH) addresses this challenge through a protein-centered, alignme
 
 This repository provides the datasets, model code, and usage accompanying the paper “Decrypting viral dark matter through key proteins using large language models”, supporting analyses and downstream applications in phage discovery and microbiome therapeutics.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Contents
 
-- [1. Installation](#1-installation)
-  - [1.1 Clone the Repository](#11-clone-the-repository)
-  - [1.2 Setup Environment](#12-setup-environment)
-  - [1.3 Download Pretrained Models](#13-download-pretrained-models)
-  - [1.4 Quick Test](#14-quick-test)
-- [2 Usage](#2-usage)
-  - [2.1 Parameters](#21-parameters)
-  - [2.2 Output Description](#22-output-description)
-- [3 Training (Optional)](#3-training-optional)
-  - [3.1 Reproducing VirHostHunter Training](#31-reproducing-virhosthunter-training)
-    - [3.1.1 Data Preparation](#311-data-preparation)
-    - [3.1.2 Model Training](#312-model-training)
-    - [3.1.3 Prediction and Evaluation](#313-prediction-and-evaluation)
-  - [3.2  Training with Custom Datasets](#32--training-with-custom-datasets)
-    - [3.2.1 Prepare Custom Dataset](#321-prepare-custom-dataset)
-    - [3.2.2 Update Label Information](#322-update-label-information)
-    - [3.2.3 Modify Training Script](#323-modify-training-script)
-    - [3.2.4 Modify Predition Script](#324-modify-predition-script)
-    - [3.2.5 Model Training, Prediction and Evaluation](#325-model-training-prediction-and-evaluation)
-- [4 Troubleshooting](#4-troubleshooting)
-- [Contact Information](#contact-information)
-- [License](#license)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!---toc start-->
+
+* [Introduction](#introduction)
+* [1 Installation](#1-installation)
+  * [1.1 Setup Environment](#11-setup-environment)
+  * [1.3 Download Pretrained Models](#13-download-pretrained-models)
+  * [1.4 Quick Test](#14-quick-test)
+* [2 Usage](#2-usage)
+  * [2.1 Parameters](#21-parameters)
+  * [2.2 Output Description](#22-output-description)
+* [3 Training (Optional)](#3-training-optional)
+  * [3.1 Reproducing VirHostHunter Training](#31-reproducing-virhosthunter-training)
+  * [3.2  Training with Custom Datasets](#32-training-with-custom-datasets)
+* [4 Troubleshooting](#4-troubleshooting)
+* [Contact Information](#contact-information)
+* [License](#license)
+
+<!---toc end-->
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+
 # 1. Installation
 
-**GPU Recommendation:**
+> **⚠️ System Requirements**
+> A GPU is **strongly recommended** for all steps (embedding, training, prediction). Running ProtT5 on a CPU is extremely slow and may lead to **numerical instability**.
+> *Reference Hardware: NVIDIA RTX 3090 (24 GiB VRAM).*
+>
+> 🔗 **Support:** [Watch Video Guide](https://www.youtube.com/watch?v=qu0Hw80xRpY) • [Report Issue](https://github.com/YuehuaOu/Viral-Host-Hunter/issues) • [Email Us](#contact-information)
 
-We strongly recommend using a GPU for all steps (embedding generation, training, and prediction) to ensure reasonable performance and accuracy. While `vhh-predict` can run on CPU for the example data, ProtT5 execution is extremely slow on CPU and we cannot guarantee numerical precision or stability in this mode.
+## 1.1 Setup Environment
 
-In our case, we used an **NVIDIA GeForce RTX 3090 (24 GiB VRAM)** to generate 1024-dimensional embeddings and perform model training/prediction.
+VirHostHunter is built on Python 3.9, PyTorch 2.4.0, and CUDA 11.8. We recommend using a dedicated Conda environment to avoid conflicts.
 
-Follow the steps below to complete the installation. We also provide demonstration videos showing successful installation and usage on multiple platforms: https://www.youtube.com/watch?v=qu0Hw80xRpY
+First, create and activate the virtual environment:
 
-🛠️ For any installation issues, feel free to contact us via GitHub issues or email.
-
-## 1.1 Clone the Repository
-
-```bash
-git clone https://github.com/YuehuaOu/Viral-Host-Hunter
-cd Viral-Host-Hunter
-```
-
-## 1.2 Setup Environment
-
-VirHostHunter was developed and tested with **Python 3.9, PyTorch 2.4.0, and CUDA 11.8.**
-
-To ensure a smooth installation and proper functionality, we recommend creating a dedicated virtual environment and installing the required dependencies:
-
-```bash
-# Environment setup: Create Python 3.9 venv and activate it
+```Bash
 conda create -n VHH python=3.9
 conda activate VHH
+```
 
-# Install vhh
+Then, choose one of the following methods to install VirHostHunter:
 
-## Methods 1: via pip
+**Method 1: via Pip (Latest Development Version)**
+```Bash
+
 pip install git+https://github.com/YuehuaOu/Viral-Host-Hunter.git
-
-## Methods 2: via conda
-conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=11.8 -c pytorch -c nvidia
-conda install -c bioconda viral-host-hunter
-conda install -c conda-forge transformers=4.51 # 5. Install transformers 4.51 (To be included in bioconda viral-host-hunter v0.2.0)
 
 ```
 
-> **Notes**:
->
-> - If your system has a different CUDA version, refer to [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/) to find the compatible installation command.
-> - A Common error: This error indicates a mismatch between your installed PyTorch and CUDA versions. Reinstall PyTorch with the appropriate CUDA toolkit for your GPU.
->
->   ```
->   RuntimeError: CUDA error: no kernel image is available for execution on the device
->   ```
-> - ⚠️ Please check whether your `transformers` package version is **<= 4.51**. If not, please manually downgrade your `transformers` package, otherwise it may cause errors during use. See Section [4 Troubleshooting](#4-troubleshooting) for more details.
+**Method 2: via Conda**
+
+```Bash
+# Install PyTorch and CUDA dependencies
+conda install pytorch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+
+# Install VirHostHunter v0.2.0 and additional dependencies
+conda install -c conda-forge -c bioconda viral-host-hunter
+```
+
+
+
+> **💡 Installation Notes:**
+> * **CUDA Compatibility:** If your CUDA version differs from 11.8, find the correct command at [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/).
+> * **Troubleshooting:** If you encounter `RuntimeError: CUDA error...` or other issues, please refer to [Section 4: Troubleshooting](#4-troubleshooting).
 
 ## 1.3 Download Pretrained Models
 
-Pretrained models can be downloaded from our [model repository](https://zenodo.org/records/17340381):
+This tool requires two sets of model weights: the VirHostHunter trained models and the ProtT5 embedding model.
 
-```bash
+### A. VirHostHunter Models (Required)
+
+Download and unzip the trained model weights from [Zenodo]((https://zenodo.org/records/17340381)):
+
+```Bash
 wget https://zenodo.org/records/17340381/files/models.zip
 unzip models.zip
 ```
 
-When running the `vhh-predict` command, specify the path to the downloaded model directory using the `--model_dir` parameter.
+📝 **Usage Note:** Remember the path to the unzipped models directory. You will need to pass it to the --model_dir argument when running predictions later (e.g., `--model_dir /path/to/extracted/models`).
 
-VirHostHunter also requires the pretrained **ProtT5-XL-UniRef50** model for generating protein embeddings:：
+### B. ProtT5-XL-UniRef50 (For Offline Use Only)
 
-- If your machine has internet access, the model will be downloaded automatically at runtime.
-- For offline use, manually download the files from [Rostlab/prot_t5_xl_uniref50](https://huggingface.co/Rostlab/prot_t5_xl_uniref50/tree/main) to a local directory.
-  **Note:** You only need `pytorch_model.bin` (not the other `.bin` files) along with the remaining files. Then, specify your local directory path using the `--prott5_dir` parameter.
+VirHostHunter uses **ProtT5-XL-UniRef50** for protein embeddings. By default, the model is downloaded automatically if your machine has internet access.
+
+**For Offline Use Only:** Manually download the files from Rostlab/prot_t5_xl_uniref50 to a local directory. Manually download the files manually from [Rostlab/prot_t5_xl_uniref50](https://huggingface.co/Rostlab/prot_t5_xl_uniref50/tree/main) and place them in a local directory.
+
+⚠️ Important File Selection: You do NOT need to download all files. Please ensure your directory contains only the following:
+- config.json
+- pytorch_model.bin (The large 11GB file. No need to download other .bin or .safetensors files if present)
+- special_tokens_map.json
+- tokenizer_config.json
+- spiece.model
+
+📝 **Usage Note:** When running offline, pass your download path to the --prott5_dir argument (e.g., `--prott5_dir /path/to/local_prot_t5`).
 
 ## 1.4 Quick Test
 
-Run `./examples/run_example.sh <model_dir> [prott5_dir]` **in the Viral-Host-Hunter directory** to quickly test the installation with the example data. 
+We provide example data and scripts within the repository to help you verify a successful installation.
 
+First, **clone the repository** to access the examples folder:
+
+```Bash
+git clone https://github.com/YuehuaOu/Viral-Host-Hunter.git
+cd Viral-Host-Hunter
+```
+
+Then, run the provided shell script. Replace `/path/to/models_dir` with the directory where you unzipped the models in [Section 1.3](#13-download-pretrained-models).
 
 ```bash
+# Syntax: bash ./examples/run_example.sh <model_dir> [prott5_dir]
+
 bash ./examples/run_example.sh /path/to/models_dir               # online ProtT5
 # or
 bash ./examples/run_example.sh /path/to/models_dir /path/to/prott5_dir   # offline ProtT5
@@ -152,7 +164,7 @@ vhh-predict \
 | | `--phage_type` | Phage source environment (see details below). | `gut` (default), `environment` |
 | | `--level` | Taxonomic prediction depth. | `all` (default), `family`, `genus`, `species` |
 | Output | `--output_dir` | Directory to save prediction results. | `./output` |
-| | `--output_format`| File format for results. | `csv`, `tsv`, `xlsx`, `both` |
+| | `--output_format`| File format for results. | `csv` (default), `tsv`, `xlsx`, `both` (csv and xlsx) |
 | | `--lineage` | Flag: Append full lineage columns to output. | *Disabled* |
 | Other | `--embedding_dir` | Directory to save/load precomputed embeddings. | `./embeddings` |
 | | `--prott5_dir` | Local ProtT5 path for **offline** mode. | - |
@@ -339,31 +351,60 @@ Follow the same procedures as described in Sections **3.1.2 Model Training** and
 
 # 4 Troubleshooting
 
-This chapter summarizes several issues reported by users during actual usage, along with explanations and suggested solutions.
+This chapter summarizes common issues encountered by users, along with their causes and solutions.
 
+## Could not solve for environment specs
 
+**Error Message:**
 
-**torch.load Safety Check Error**
-
-Example error message:
-
+```Plaintext
+RuntimeError: CUDA error: no kernel image is available for execution on the device
 ```
+
+**Cause:** This error indicates a mismatch between your installed PyTorch version and your system's CUDA version (or GPU driver capabilities). It often happens if you install the default PyTorch (which might be CPU-only or for a newer CUDA version) instead of the specific version required by your hardware.
+
+**Solution:** Reinstall PyTorch with the appropriate CUDA toolkit version matching your GPU. You can find the correct installation commands at [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/).
+
+## CUDA & PyTorch Mismatch
+
+**Error Message:**
+
+```Plaintext
+$ conda install -c conda-forge -c bioconda viral-host-hunter
+......
+Could not solve for environment specs 
+The following package could not be installed
+......
+```
+
+**Cause and Solution:** Channel priority or leftover index cache is pointing to an old version; clear the cache and try again.
+
+```Bash
+conda clean -i
+conda install -c conda-forge -c bioconda viral-host-hunter
+```
+
+## torch.load Safety Check Error
+
+**Error Message:**
+
+```Plaintext
 in check_torch_load_is_safe
 raise ValueError(
-ValueError: Due to a serious vulnerability issue in torch.load, even with weights_only=True, we now require users to upgrade torch to at least v2.6 in order to use the function. This version restriction does not apply when loading files with safetensors.
+ValueError: Due to a serious vulnerability issue in torch.load, even with weights_only=True, we now require users to upgrade torch to at least v2.6 in order to use the function...
 See the vulnerability report here https://nvd.nist.gov/vuln/detail/CVE-2025-32434
 ```
-This error occurs because **`transformers >= 4.52`** introduces a mandatory safety check when calling `torch.load`. To avoid this issue, `torch >= 2.6` is required.  
 
-However, this project is currently based on **`torch = 2.4`**, so the recommended solution is to **downgrade `transformers` to version `4.51` or lower**:
+**Cause:** This issue arises because `transformers >= 4.52` introduces a mandatory safety check for torch.load that requires `torch >= 2.6`. Since VirHostHunter is currently built on `torch == 2.4`, using a newer version of `transformers` will trigger this incompatibility.
 
-```
+**Note:** We have pinned `transformers<=4.51` in the latest configuration to prevent this, but you may encounter this if you manually upgrade dependencies.
+
+**Solution:** Downgrade `transformers` to version `4.51` or lower:
+
+```Bash
 conda install -c conda-forge transformers=4.51
-# or
-mamba install transformers=4.51 -c conda-forge
 ```
-
-An `environment.yml` file is provided to help users verify and align their dependency versions. And We will support `torch==2.6` in the next release.
+We are working on supporting torch==2.6 in the fulture release.
 
 
 # Contact Information
