@@ -15,8 +15,8 @@ This repository provides the datasets, pretrained models, and code accompanying 
 * [Introduction](#introduction)
 * [1 Installation](#1-installation)
   * [1.1 Setup Environment](#11-setup-environment)
-  * [1.3 Download Pretrained Models](#13-download-pretrained-models)
-  * [1.4 Quick Test](#14-quick-test)
+  * [1.2 Download Pretrained Models](#12-download-pretrained-models)
+  * [1.3 Quick Test](#13-quick-test)
 * [2 Usage](#2-usage)
   * [2.1 Parameters](#21-parameters)
   * [2.2 Output Description](#22-output-description)
@@ -76,7 +76,7 @@ conda install -c conda-forge -c bioconda viral-host-hunter
 > * **CUDA Compatibility:** If your CUDA version differs from 11.8, find the correct command at [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/).
 > * **Troubleshooting:** If you encounter `RuntimeError: CUDA error...` or other issues, please refer to [Section 4: Troubleshooting](#4-troubleshooting).
 
-## 1.3 Download Pretrained Models
+## 1.2 Download Pretrained Models
 
 This tool requires two sets of model weights: the VirHostHunter trained models and the ProtT5 embedding model.
 
@@ -106,7 +106,7 @@ VirHostHunter uses **ProtT5-XL-UniRef50** for protein embeddings. By default, th
 
 📝 **Usage Note:** For offline usage, the local ProtT5 directory should be provided via the `--prott5_dir` argument (e.g., `--prott5_dir /path/to/local_prot_t5`).
 
-## 1.4 Quick Test
+## 1.3 Quick Test
 
 We provide example data and scripts within the repository to help you verify a successful installation.
 
