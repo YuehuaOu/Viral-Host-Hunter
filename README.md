@@ -2,11 +2,9 @@
 
 # Introduction
 
-Understanding virus–host interactions is central to microbiome research, viral ecology, and phage therapy development. Yet, the majority of viral sequences in metagenomic datasets remain fragmental and host-unknown, collectively referred to as viral dark matter.
+VirHostHunter (VHH) is a protein-centered, alignment-free framework for **predicting bacterial hosts of phages** from fragmented viral sequences. By leveraging key phage proteins (e.g., tails and lysins) and integrating Protein Language Models (PLMs) with Vision Transformers (ViTs), VHH captures functional homology beyond sequence similarity, enabling accurate and scalable host prediction without requiring complete viral genomes.
 
-VirHostHunter (VHH) addresses this challenge through a protein-centered, alignment-free framework that predicts bacterial hosts of phages using key proteins such as tails and lysins, without requiring full genomes. By integrating Protein Language Models (PLMs) and Vision Transformers (ViTs), VHH captures functional homology beyond sequence similarity, enabling high-resolution and scalable host prediction.
-
-This repository provides the datasets, model code, and usage accompanying the paper “Decrypting viral dark matter through key proteins using large language models”, supporting analyses and downstream applications in phage discovery and microbiome therapeutics.
+This repository provides the datasets, pretrained models, and code accompanying the paper “Decrypting viral dark matter through key proteins using large language models”, supporting applications in phage discovery and microbiome research.
 
 ## Contents
 
@@ -180,7 +178,7 @@ vhh-predict \
 
 ## 2.2 Output Description
 
-Prediction results land in $OUTPUT_DIR. All outputs share the same column layout:
+Prediction results land in `$OUTPUT_DIR`. All outputs share the same column layout:
 
 - Columns 1–2: Input protein and DNA sequence ID
 - Columns 4–7: Predicted hosts at different confidence thresholds (no threshold, 69%, 84%, 95%)
@@ -353,7 +351,7 @@ Follow the same procedures as described in Sections **3.1.2 Model Training** and
 
 This chapter summarizes common issues encountered by users, along with their causes and solutions.
 
-## Could not solve for environment specs
+## CUDA & PyTorch Mismatch
 
 **Error Message:**
 
@@ -365,7 +363,7 @@ RuntimeError: CUDA error: no kernel image is available for execution on the devi
 
 **Solution:** Reinstall PyTorch with the appropriate CUDA toolkit version matching your GPU. You can find the correct installation commands at [PyTorch Previous Versions](https://pytorch.org/get-started/previous-versions/).
 
-## CUDA & PyTorch Mismatch
+## Could not solve for environment specs
 
 **Error Message:**
 
