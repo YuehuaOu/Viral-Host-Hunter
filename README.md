@@ -89,7 +89,7 @@ wget https://zenodo.org/records/17340381/files/models.zip
 unzip models.zip
 ```
 
-📝 **Usage Note:** Remember the path to the unzipped models directory. You will need to pass it to the --model_dir argument when running predictions later (e.g., `--model_dir /path/to/extracted/models`).
+📝 **Usage Note**: The path to the unzipped VirHostHunter models must be provided via the `--model_dir` argument when running predictions (e.g., `--model_dir /path/to/extracted/models`).
 
 ### B. ProtT5-XL-UniRef50 (For Offline Use Only)
 
@@ -104,7 +104,7 @@ VirHostHunter uses **ProtT5-XL-UniRef50** for protein embeddings. By default, th
 - tokenizer_config.json
 - spiece.model
 
-📝 **Usage Note:** When running offline, pass your download path to the --prott5_dir argument (e.g., `--prott5_dir /path/to/local_prot_t5`).
+📝 **Usage Note:** For offline usage, the local ProtT5 directory should be provided via the `--prott5_dir` argument (e.g., `--prott5_dir /path/to/local_prot_t5`).
 
 ## 1.4 Quick Test
 
